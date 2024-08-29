@@ -69,7 +69,7 @@ func exportSubaccount(subaccountID string, configDir string) error {
 
 func readSubaccountDataSource(subaccountId string) (string, error) {
 	choice := "btp_subaccount"
-	dsDoc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "data-sources", choice, "v1.3.0", "github.com")
+	dsDoc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "data-sources", choice, BtpProviderVersion, "github.com")
 
 	if err != nil {
 		log.Fatalf("read doc failed!")
@@ -122,7 +122,7 @@ func getSubaccountTfStateData(configDir string) ([]byte, error) {
 
 func getSubaccountImportBlock(data map[string]interface{}, subaccountId string) (string, error) {
 	choice := "btp_subaccount"
-	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, "v1.3.0", "github.com")
+	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, BtpProviderVersion, "github.com")
 	if err != nil {
 		log.Fatalf("read doc failed!")
 		return "", err

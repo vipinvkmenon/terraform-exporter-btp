@@ -73,7 +73,7 @@ func exportTrustConfigurations(subaccountID string, configDir string) {
 
 func readSubaccountTrustConfigurationsDataSource(subaccountId string) (string, error) {
 	choice := "btp_subaccount_trust_configurations"
-	dsDoc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "data-sources", choice, "v1.3.0", "github.com")
+	dsDoc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "data-sources", choice, BtpProviderVersion, "github.com")
 
 	if err != nil {
 		log.Fatalf("read doc failed!")
@@ -126,7 +126,7 @@ func getTrustConfigurationsTfStateData(configDir string) ([]byte, error) {
 
 func getTrustConfigurationsImportBlock(data map[string]interface{}, subaccountId string) (string, error) {
 	choice := "btp_subaccount_trust_configuration"
-	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, "v1.3.0", "github.com")
+	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, BtpProviderVersion, "github.com")
 	if err != nil {
 		log.Fatalf("read doc failed!")
 		return "", err
