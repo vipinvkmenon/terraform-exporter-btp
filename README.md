@@ -1,48 +1,51 @@
+![Golang](https://img.shields.io/badge/Go-1.22-informational)
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/terraform-exporter-for-sap-btp)](https://api.reuse.software/info/github.com/SAP/terraform-exporter-for-sap-btp)
 
 # Terraform exporter for SAP BTP
 
 ## About this project
 
-The Terraform Exporter for SAP BTP is a tool that helps export resources in a BTP Global Account.  It can generate Terraform scripts for the resources and import those resources into a Terraform state file.
+The *Terraform Exporter for SAP BTP* is a tool that helps export resources from a BTP Global Account.  It can generate Terraform scripts for the resources and import those resources into a Terraform state file.
 
 ## Requirements and Setup
 
-1) Open this repo inside VS Code Editor
-2) We have setup a devcontainer, so open the repo using devcontainer.
-3) Build the binary: From the terminal in vscode run `make build` & `make install`
-4) A file (binary) `btptfexporter` will be found in the current directory
-5) Make it executable: `chomd +x btptfexporter`.
+### Local build
 
-OR
+If you want to build the binary from scratch, folow these steps:
 
-Please go to the releases section and download the binary for your system.
+1. Open this repo inside VS Code Editor
+1. We have setup a devcontainer, so open the repo using devcontainer.
+1. Build the binary: From the terminal in vscode run `make build` & `make install`
+1. A file (binary) `btptfexporter` will be found in the default binary path of your Go installation.
+1. Make it executable: `chomd +x btptfexporter`.
 
+### Prebuilt binary
 
-## Usage 
+Please go to the releases section of this repository and download the binary for your system.
 
- 
-1) [Download](https://github.tools.sap/BTP-Terraform/btptfexporter/releases/tag/v0.0.3-poc) or build the binary to a local path/folder. 
-2) Create the following required environment varaibles:
-BTP_USERNAME, BTP_PASSWORD, BTP_GLOBALACCOUNT
-Optionally, you can set the following parameters: BTP_CLIENT_SERVER_URL, BTP_IDP, BTP_TLS_CLIENT_CERTIFICATE, BTP_TLS_CLIENT_KEY, BTP_TLS_IDP_URL.
-Please refer the BTP Terraform Provider documentation to know more about the parameters.
+## Usage
 
-3) use the --help flag to know more.
+1. [Download](https://github.tools.sap/BTP-Terraform/btptfexporter/releases/tag/v0.0.3-poc) or build the binary to a local path/folder.
+1. Create the following required environment varaibles: `BTP_USERNAME`, `BTP_PASSWORD`, `BTP_GLOBALACCOUNT`
+Optionally, you can set the following parameters: `BTP_CLIENT_SERVER_URL`, `BTP_IDP`, `BTP_TLS_CLIENT_CERTIFICATE`, `BTP_TLS_CLIENT_KEY`, `BTP_TLS_IDP_URL`. Please refer the [BTP Terraform Provider documentation](https://registry.terraform.io/providers/SAP/btp/latest/docs) to learn more about these parameters.
+
+    > **Note** - You can also define a `.env` file with the content of the parameters and export this file via `export $(xargs <.env)`.
+
+1. use the `--help` flag to know more.
 
 ## Commands
 
-### 1. resource : Export specific btp resources from a subaccount
+### resource : Export specific btp resources from a subaccount
 
 Use this command to create terraform configuration for all the resources of a subaccount or specific resource using the subcommands
 
-``` 
-btptfexporter resource [command] 
+```bash
+btptfexporter resource [command]
 
 Example:
 
 btptfexporter resource all --subaccount <subaccount-id>
-   
+
 Available Commands:
 
   all                   export all resources of a subaccount
@@ -52,21 +55,21 @@ Available Commands:
   subaccount            export subaccount
   subscriptions         export subscriptions of a subaccount
   trust-configurations  export trust configurations of a subaccount
-  
+
   ```
 
-### 2. generate-resources-list  : Store the list of resources from btp subaccount into a json file
+### generate-resources-list  : Store the list of resources from btp subaccount into a json file
 
 Use this command to get the list of resources from a subaccont and store it in a json file.
 
-``` 
-btptfexporter generate-resources-list [flags] 
+```bash
+btptfexporter generate-resources-list [flags]
 
 Example:
 
 btptfexporter generate-resources-list --resources=entitlements,subscriptions --subaccount=<subacount_id>
 ```
-  
+
 Valid resources are:
 - subaccount
 - entitlements
