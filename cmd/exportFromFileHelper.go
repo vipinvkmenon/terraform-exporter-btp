@@ -141,7 +141,7 @@ func getTrustConfig(values []string, subaccountID string, configDir string) {
 
 func getImportBlock4(data map[string]interface{}, subaccountId string, values []string) (string, error) {
 	choice := "btp_subaccount_trust_configuration"
-	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, "v1.3.0", "github.com")
+	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, BtpProviderVersion, "github.com")
 	if err != nil {
 		log.Fatalf("read doc failed!")
 		return "", err
@@ -223,7 +223,7 @@ func getSubscriptionConfig(values []string, subaccountID string, configDir strin
 
 func getImportBlock3(data map[string]interface{}, subaccountId string, values []string) (string, error) {
 	choice := "btp_subaccount_subscription"
-	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, "v1.3.0", "github.com")
+	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, BtpProviderVersion, "github.com")
 	if err != nil {
 		log.Fatalf("read doc failed!")
 		return "", err
@@ -306,7 +306,7 @@ func getEntitlementConfig(values []string, subaccountID string, configDir string
 func getImportBlock2(data map[string]interface{}, subaccountId string, values []string) (string, error) {
 
 	choice := "btp_subaccount_entitlement"
-	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, "v1.3.0", "github.com")
+	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, BtpProviderVersion, "github.com")
 	if err != nil {
 		log.Fatalf("read doc failed!")
 		return "", err
@@ -393,7 +393,7 @@ func getEnvInstanceConfig(values []string, subaccountID string, configDir string
 
 func getImportBlock1(data map[string]interface{}, subaccountId string, values []string) (string, error) {
 	choice := "btp_subaccount_environment_instance"
-	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, "v1.3.0", "github.com")
+	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, BtpProviderVersion, "github.com")
 	if err != nil {
 		log.Fatalf("read doc failed!")
 		return "", err

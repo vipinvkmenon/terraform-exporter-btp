@@ -74,7 +74,7 @@ func exportEnvironmentInstances(subaccountID string, configFolder string) {
 // this function read the data source document and return the data block to use to get the resoure state
 func readDataSource(subaccountId string) (string, error) {
 	choice := "btp_subaccount_environment_instances"
-	dsDoc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "data-sources", choice, "v1.3.0", "github.com")
+	dsDoc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "data-sources", choice, BtpProviderVersion, "github.com")
 
 	if err != nil {
 		log.Fatalf("read doc failed!")
@@ -128,7 +128,7 @@ func getTfStateData(configDir string) ([]byte, error) {
 
 func getImportBlock(data map[string]interface{}, subaccountId string) (string, error) {
 	choice := "btp_subaccount_environment_instance"
-	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, "v1.3.0", "github.com")
+	resource_doc, err := tfutils.GetDocsForResource("SAP", "btp", "btp", "resources", choice, BtpProviderVersion, "github.com")
 	if err != nil {
 		log.Fatalf("read doc failed!")
 		return "", err
