@@ -1,4 +1,4 @@
-![Golang](https://img.shields.io/badge/Go-1.22-informational)
+![Golang](https://img.shields.io/badge/Go-1.23-informational)
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/terraform-exporter-for-sap-btp)](https://api.reuse.software/info/github.com/SAP/terraform-exporter-for-sap-btp)
 
 # Terraform exporter for SAP BTP
