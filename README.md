@@ -37,13 +37,14 @@ If you want to build the binary from scratch, follow these steps:
 
 1. The system will store the binary as `btptfexporter` (`btptfexporter.exe` in case of Windows) in the default binary path of your Go installation `$GOPATH/bin`.
 
-   > **Note** - You find the value of the GOPATH via `go env GOPATH`
+   > > [!TIP]
+   > You find the value of the GOPATH via `go env GOPATH`
 
 #### Troubleshooting
 
 ##### Binary not executable (MacOS or Linux)
 
-In case you get an error that the binary is not executable, naviigate to the location of the binary and execute the following command:
+In case you get an error that the binary is not executable, navigate to the location of the binary and execute the following command:
 
 ```bash
 chomd +x btptfexporter
@@ -63,6 +64,7 @@ After executing the [setup](#setup) of the CLI you must set some required enviro
 
    - Specify a custom IdP for the authentication via `BTP_IDP`
    - Specify a URL of the BTP CLI server (SAP internal only) via `BTP_CLI_SERVER_URL`
+   - Specify the login using SSO via `BTP_ENABLE_SSO` (true/false)
 
 The parameters correspond to the Terraform provider configuration options you find in the [BTP Terraform Provider documentation](https://registry.terraform.io/providers/SAP/btp/latest/docs)
 
@@ -104,10 +106,11 @@ How to set the parameters depends on your setup and is OS-specific:
     - Execute the following command in a terminal:
 
        ```bash
-       export $(xargs <.env)`
+       export $(xargs <.env)
        ```
 
-    > **Note** - There is no predefined fucntionality in PowerShell to achieve the same. A custom script would be needed.
+    > > [!IMPORTANT]
+    > There is no predefined functionality in PowerShell to achieve the same. A custom script would be needed.
 
 ## Commands
 
