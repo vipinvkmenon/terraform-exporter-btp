@@ -76,7 +76,7 @@ data "btp_subaccount" "my_account_bysubdomain" {
   | `MIGRATION_FAILED` | The migration of the subaccount failed and the subaccount was not migrated. | 
   | `ROLLBACK_MIGRATION_PROCESSING` | The migration of the subaccount was rolled back and the subaccount is not migrated. | 
   | `SUSPENSION_FAILED` | The suspension operations failed. |
-- `usage` (String) Shows whether the subaccount is used for production purposes. This flag can help your cloud operator to take appropriate action when handling incidents that are related to mission-critical accounts in production systems. Do not apply for subaccounts that are used for nonproduction purposes, such as development, testing, and demos. Applying this setting this does not modify the subaccount. Possible values are: 
+- `usage` (String) Shows whether the subaccount is used for production purposes. This flag can help your cloud operator to take appropriate action when handling incidents that are related to mission-critical accounts in production systems. Do not apply for subaccounts that are used for non-production purposes, such as development, testing, and demos. Applying this setting this does not modify the subaccount. Possible values are: 
 
   | value | description | 
   | --- | --- | 
