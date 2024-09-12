@@ -1136,9 +1136,6 @@ func (p *tfMarkdownParser) parse(tfMarkdown []byte) (entityDocs, error) {
 		}
 	}
 
-	// // Get links.
-	// footerLinks := getFooterLinks(markdown)
-
 	doc, _ := cleanupDocument(p.rawname, p.ret)
 
 	return doc, nil
@@ -1166,10 +1163,7 @@ func GetDocsForResource(org string, provider string, resourcePrefix string, kind
 	markdownBytes, markdownFileName, found := getMarkdownDetails(org, provider,
 		resourcePrefix, kind, rawname, providerModuleVersion, githost)
 	if !found {
-		msg := fmt.Sprintf("could not find docs for %v %v.", kind, rawname)
-
-		log.Fatal(msg)
-		return entityDocs{}, nil
+		return entityDocs{}, fmt.Errorf("could not find docs for %v %v", kind, rawname)
 	}
 
 	doc, err := parseTFMarkdown(kind, markdownBytes, markdownFileName, rawname)
