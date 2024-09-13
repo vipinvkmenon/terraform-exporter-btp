@@ -1,4 +1,4 @@
-## btptfexporter completion powershell
+## btptfexport completion powershell
 
 Generate the autocompletion script for powershell
 
@@ -8,14 +8,14 @@ Generate the autocompletion script for powershell.
 
 To load completions in your current shell session:
 
-	btptfexporter completion powershell | Out-String | Invoke-Expression
+	btptfexport completion powershell | Out-String | Invoke-Expression
 
 To load completions for every new session, add the output of the above command
 to your powershell profile.
 
 
 ```
-btptfexporter completion powershell [flags]
+btptfexport completion powershell [flags]
 ```
 
 ### Options
@@ -27,5 +27,5 @@ btptfexporter completion powershell [flags]
 
 ### SEE ALSO
 
-* [btptfexporter completion](btptfexporter_completion.md)	 - Generate the autocompletion script for the specified shell
+* [btptfexport completion](btptfexport_completion.md)	 - Generate the autocompletion script for the specified shell
 

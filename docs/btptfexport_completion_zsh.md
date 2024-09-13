@@ -1,4 +1,4 @@
-## btptfexporter completion zsh
+## btptfexport completion zsh
 
 Generate the autocompletion script for zsh
 
@@ -13,23 +13,23 @@ to enable it.  You can execute the following once:
 
 To load completions in your current shell session:
 
-	source <(btptfexporter completion zsh)
+	source <(btptfexport completion zsh)
 
 To load completions for every new session, execute once:
 
 #### Linux:
 
-	btptfexporter completion zsh > "${fpath[1]}/_btptfexporter"
+	btptfexport completion zsh > "${fpath[1]}/_btptfexport"
 
 #### macOS:
 
-	btptfexporter completion zsh > $(brew --prefix)/share/zsh/site-functions/_btptfexporter
+	btptfexport completion zsh > $(brew --prefix)/share/zsh/site-functions/_btptfexport
 
 You will need to start a new shell for this setup to take effect.
 
 
 ```
-btptfexporter completion zsh [flags]
+btptfexport completion zsh [flags]
 ```
 
 ### Options
@@ -41,5 +41,5 @@ btptfexporter completion zsh [flags]
 
 ### SEE ALSO
 
-* [btptfexporter completion](btptfexporter_completion.md)	 - Generate the autocompletion script for the specified shell
+* [btptfexport completion](btptfexport_completion.md)	 - Generate the autocompletion script for the specified shell
 

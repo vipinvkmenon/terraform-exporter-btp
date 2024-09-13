@@ -1,4 +1,4 @@
-## btptfexporter completion bash
+## btptfexport completion bash
 
 Generate the autocompletion script for bash
 
@@ -11,23 +11,23 @@ If it is not installed already, you can install it via your OS's package manager
 
 To load completions in your current shell session:
 
-	source <(btptfexporter completion bash)
+	source <(btptfexport completion bash)
 
 To load completions for every new session, execute once:
 
 #### Linux:
 
-	btptfexporter completion bash > /etc/bash_completion.d/btptfexporter
+	btptfexport completion bash > /etc/bash_completion.d/btptfexport
 
 #### macOS:
 
-	btptfexporter completion bash > $(brew --prefix)/etc/bash_completion.d/btptfexporter
+	btptfexport completion bash > $(brew --prefix)/etc/bash_completion.d/btptfexport
 
 You will need to start a new shell for this setup to take effect.
 
 
 ```
-btptfexporter completion bash
+btptfexport completion bash
 ```
 
 ### Options
@@ -39,5 +39,5 @@ btptfexporter completion bash
 
 ### SEE ALSO
 
-* [btptfexporter completion](btptfexporter_completion.md)	 - Generate the autocompletion script for the specified shell
+* [btptfexport completion](btptfexport_completion.md)	 - Generate the autocompletion script for the specified shell
 

@@ -1,4 +1,4 @@
-## btptfexporter resource entitlements
+## btptfexport resource entitlements
 
 export entitlements of a subaccount
 
@@ -7,7 +7,7 @@ export entitlements of a subaccount
 export entitlements will export all the entitlements of the given subaccount and generate resource configuration for it
 
 ```
-btptfexporter resource entitlements [flags]
+btptfexport resource entitlements [flags]
 ```
 
 ### Options
@@ -21,5 +21,5 @@ btptfexporter resource entitlements [flags]
 
 ### SEE ALSO
 
-* [btptfexporter resource](btptfexporter_resource.md)	 - Export specific btp resources from a subaccount
+* [btptfexport resource](btptfexport_resource.md)	 - Export specific btp resources from a subaccount
 

@@ -1,4 +1,4 @@
-## btptfexporter resource subaccount
+## btptfexport resource subaccount
 
 export subaccount
 
@@ -7,7 +7,7 @@ export subaccount
 export subaccount will export the given subaccount and generate resource configuration for it
 
 ```
-btptfexporter resource subaccount [flags]
+btptfexport resource subaccount [flags]
 ```
 
 ### Options
@@ -21,5 +21,5 @@ btptfexporter resource subaccount [flags]
 
 ### SEE ALSO
 
-* [btptfexporter resource](btptfexporter_resource.md)	 - Export specific btp resources from a subaccount
+* [btptfexport resource](btptfexport_resource.md)	 - Export specific btp resources from a subaccount
 

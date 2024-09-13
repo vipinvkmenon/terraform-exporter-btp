@@ -1,4 +1,4 @@
-## btptfexporter generate-resources-list
+## btptfexport generate-resources-list
 
 Store the list of resources in a subaccount into a json file
 
@@ -9,8 +9,8 @@ It will then store this list into a file.
 
 For example:
 
-btptfexporter generate-resources-list --resources=subaccount,entitlements -s <subaccount-id>
-btptfexporter generate-resources-list --resources=all -s <subaccount-id> -j <file-name.json>
+btptfexport generate-resources-list --resources=subaccount,entitlements -s <subaccount-id>
+btptfexport generate-resources-list --resources=all -s <subaccount-id> -j <file-name.json>
 
 Valid resources are:
 - subaccount
@@ -27,7 +27,7 @@ Mixing "all" with other resources will throw an error.
 
 
 ```
-btptfexporter generate-resources-list [flags]
+btptfexport generate-resources-list [flags]
 ```
 
 ### Options
@@ -41,5 +41,5 @@ btptfexporter generate-resources-list [flags]
 
 ### SEE ALSO
 
-* [btptfexporter](btptfexporter.md)	 - Terraform exporter for BTP
+* [btptfexport](btptfexport.md)	 - Terraform exporter for BTP
 
