@@ -47,7 +47,7 @@ func exportSubaccount(subaccountID string, configDir string, optionalValues ...[
 	if len(optionalValues) != 0 {
 		valueFromJson := optionalValues[0]
 		if valueFromJson[0] != fmt.Sprintf("%v", data["name"]) {
-			log.Println("Error:", fmt.Errorf("Subaccount "+valueFromJson[0]+" not found. Please adjust it in the provided file"))
+			log.Println("Error:", fmt.Errorf("subaccount %s not found. Please adjust it in the provided file", valueFromJson[0]))
 			os.Exit(0)
 		}
 	}

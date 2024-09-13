@@ -171,7 +171,8 @@ func getImportBlock4(data map[string]interface{}, subaccountId string, values []
 	missingTrust, subset := isSubset(subaccountAllTrusts, values)
 
 	if !subset {
-		return "", fmt.Errorf("Trust configuration " + missingTrust + " not found in the subaccount. Please adjust it in the provided file")
+		return "", fmt.Errorf("trust configuration %s not found in the subaccount. Please adjust it in the provided file", missingTrust)
+
 	}
 
 	return importBlock, nil
@@ -261,7 +262,8 @@ func getImportBlock3(data map[string]interface{}, subaccountId string, values []
 	missingSubscription, subset := isSubset(subaccountAllSubscriptions, values)
 
 	if !subset {
-		return "", fmt.Errorf("Subscription " + missingSubscription + " not found in the subaccount. Please adjust it in the provided file")
+		return "", fmt.Errorf("subscription %s not found in the subaccount. Please adjust it in the provided file", missingSubscription)
+
 	}
 
 	return importBlock, nil
@@ -353,7 +355,8 @@ func getImportBlock2(data map[string]interface{}, subaccountId string, values []
 	missingEntitlement, subset := isSubset(subaccountAllEntitlements, values)
 
 	if !subset {
-		return "", fmt.Errorf("Entitlement " + missingEntitlement + " not found in the subaccount. Please adjust it in the provided file")
+		return "", fmt.Errorf("entitlement %s not found in the subaccount. Please adjust it in the provided file", missingEntitlement)
+
 	}
 
 	return importBlock, nil
@@ -446,7 +449,8 @@ func getImportBlock1(data map[string]interface{}, subaccountId string, values []
 	missingEnvInstance, subset := isSubset(subaccountAllEnvInstances, values)
 
 	if !subset {
-		return "", fmt.Errorf("Environment " + missingEnvInstance + " not found in the subaccount. Please adjust it in the provided file")
+		return "", fmt.Errorf("environment instance %s not found in the subaccount. Please adjust it in the provided file", missingEnvInstance)
+
 	}
 
 	return importBlock, nil
