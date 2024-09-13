@@ -25,7 +25,7 @@ func exportFromFile(subaccount string, jsonfile string, resourceFile string, con
 	jsonFile, err := os.Open(jsonfile)
 
 	if err != nil {
-		fmt.Println("err")
+		fmt.Println("Error:", err)
 		return
 	}
 
@@ -68,23 +68,23 @@ func exportFromFile(subaccount string, jsonfile string, resourceFile string, con
 	generateConfig(resourceFile, configDir)
 }
 
-func generateConfigForResource(resource string, values []string, subaccout string, configDir string) {
+func generateConfigForResource(resource string, values []string, subaccount string, configDir string) {
 	//fmt.Println(resource)
 	//fmt.Println(values)
 	if resource == "environment-instances" {
-		getEnvInstanceConfig(values, subaccout, configDir)
+		getEnvInstanceConfig(values, subaccount, configDir)
 	}
 	if resource == "subaccount" {
-		exportSubaccount(subaccout, configDir)
+		exportSubaccount(subaccount, configDir, values)
 	}
 	if resource == "entitlements" {
-		getEntitlementConfig(values, subaccout, configDir)
+		getEntitlementConfig(values, subaccount, configDir)
 	}
 	if resource == "subscriptions" {
-		getSubscriptionConfig(values, subaccout, configDir)
+		getSubscriptionConfig(values, subaccount, configDir)
 	}
 	if resource == "trust-configurations" {
-		getTrustConfig(values, subaccout, configDir)
+		getTrustConfig(values, subaccount, configDir)
 	}
 }
 
@@ -118,7 +118,7 @@ func getTrustConfig(values []string, subaccountID string, configDir string) {
 	importBlock, err := getImportBlock4(data, subaccountID, values)
 	if err != nil {
 		fmt.Println("error:", err)
-		return
+		os.Exit(0)
 	}
 
 	currentDir, err := os.Getwd()
@@ -153,17 +153,26 @@ func getImportBlock4(data map[string]interface{}, subaccountId string, values []
 	}
 
 	var importBlock string
+	var subaccountAllTrusts []string
 	trusts := data["values"].([]interface{})
 
 	for x, value := range trusts {
 
 		trust := value.(map[string]interface{})
+		subaccountAllTrusts = append(subaccountAllTrusts, fmt.Sprintf("%v", trust["origin"]))
 		if slices.Contains(values, fmt.Sprintf("%v", trust["origin"])) {
 			template := strings.Replace(resource_doc.Import, "<resource_name>", "trust"+fmt.Sprint(x), -1)
 			template = strings.Replace(template, "<subaccount_id>", subaccountId, -1)
 			template = strings.Replace(template, "<origin>", fmt.Sprintf("%v", trust["origin"]), -1)
 			importBlock += template + "\n"
 		}
+	}
+
+	missingTrust, subset := isSubset(subaccountAllTrusts, values)
+
+	if !subset {
+		return "", fmt.Errorf("trust configuration %s not found in the subaccount. Please adjust it in the provided file", missingTrust)
+
 	}
 
 	return importBlock, nil
@@ -199,7 +208,7 @@ func getSubscriptionConfig(values []string, subaccountID string, configDir strin
 	importBlock, err := getImportBlock3(data, subaccountID, values)
 	if err != nil {
 		fmt.Println("error:", err)
-		return
+		os.Exit(0)
 	}
 
 	currentDir, err := os.Getwd()
@@ -235,10 +244,12 @@ func getImportBlock3(data map[string]interface{}, subaccountId string, values []
 	}
 
 	var importBlock string
+	var subaccountAllSubscriptions []string
 	subscriptions := data["values"].([]interface{})
 
 	for _, value := range subscriptions {
 		subscription := value.(map[string]interface{})
+		subaccountAllSubscriptions = append(subaccountAllSubscriptions, fmt.Sprintf("%v", subscription["app_name"])+"_"+fmt.Sprintf("%v", subscription["plan_name"]))
 		if slices.Contains(values, fmt.Sprintf("%v", subscription["app_name"])+"_"+fmt.Sprintf("%v", subscription["plan_name"])) {
 			template := strings.Replace(resource_doc.Import, "<resource_name>", strings.Replace(fmt.Sprintf("%v", subscription["app_name"]), "-", "_", -1), -1)
 			template = strings.Replace(template, "<subaccount_id>", subaccountId, -1)
@@ -246,6 +257,13 @@ func getImportBlock3(data map[string]interface{}, subaccountId string, values []
 			template = strings.Replace(template, "<plan_name>", fmt.Sprintf("%v", subscription["plan_name"]), -1)
 			importBlock += template + "\n"
 		}
+	}
+
+	missingSubscription, subset := isSubset(subaccountAllSubscriptions, values)
+
+	if !subset {
+		return "", fmt.Errorf("subscription %s not found in the subaccount. Please adjust it in the provided file", missingSubscription)
+
 	}
 
 	return importBlock, nil
@@ -281,7 +299,7 @@ func getEntitlementConfig(values []string, subaccountID string, configDir string
 	importBlock, err := getImportBlock2(data, subaccountID, values)
 	if err != nil {
 		fmt.Println("error:", err)
-		return
+		os.Exit(0)
 	}
 
 	if len(importBlock) == 0 {
@@ -318,10 +336,11 @@ func getImportBlock2(data map[string]interface{}, subaccountId string, values []
 	}
 
 	var importBlock string
+	var subaccountAllEntitlements []string
 	for key, value := range data {
 
+		subaccountAllEntitlements = append(subaccountAllEntitlements, strings.Replace(key, ":", "_", -1))
 		if slices.Contains(values, strings.Replace(key, ":", "_", -1)) {
-
 			template := strings.Replace(resource_doc.Import, "<resource_name>", strings.Replace(key, ":", "_", -1), -1)
 			template = strings.Replace(template, "<subaccount_id>", subaccountId, -1)
 			if subMap, ok := value.(map[string]interface{}); ok {
@@ -331,6 +350,13 @@ func getImportBlock2(data map[string]interface{}, subaccountId string, values []
 			}
 			importBlock += template + "\n"
 		}
+	}
+
+	missingEntitlement, subset := isSubset(subaccountAllEntitlements, values)
+
+	if !subset {
+		return "", fmt.Errorf("entitlement %s not found in the subaccount. Please adjust it in the provided file", missingEntitlement)
+
 	}
 
 	return importBlock, nil
@@ -370,7 +396,7 @@ func getEnvInstanceConfig(values []string, subaccountID string, configDir string
 
 	if err != nil {
 		fmt.Println("error:", err)
-		return
+		os.Exit(0)
 	}
 
 	if len(importBlock) == 0 {
@@ -405,11 +431,13 @@ func getImportBlock1(data map[string]interface{}, subaccountId string, values []
 	}
 
 	var importBlock string
+	var subaccountAllEnvInstances []string
 	environmentInstances := data["values"].([]interface{})
 
 	for _, value := range environmentInstances {
 
 		environmentInstance := value.(map[string]interface{})
+		subaccountAllEnvInstances = append(subaccountAllEnvInstances, fmt.Sprintf("%v", environmentInstance["environment_type"]))
 		if slices.Contains(values, fmt.Sprintf("%v", environmentInstance["environment_type"])) {
 			template := strings.Replace(resource_doc.Import, "<resource_name>", fmt.Sprintf("%v", environmentInstance["environment_type"]), -1)
 			template = strings.Replace(template, "<subaccount_id>", subaccountId, -1)
@@ -418,5 +446,21 @@ func getImportBlock1(data map[string]interface{}, subaccountId string, values []
 		}
 	}
 
+	missingEnvInstance, subset := isSubset(subaccountAllEnvInstances, values)
+
+	if !subset {
+		return "", fmt.Errorf("environment instance %s not found in the subaccount. Please adjust it in the provided file", missingEnvInstance)
+
+	}
+
 	return importBlock, nil
+}
+
+func isSubset(superSet []string, subset []string) (string, bool) {
+	for _, value := range subset {
+		if !slices.Contains(superSet, value) {
+			return value, false
+		}
+	}
+	return "", true
 }

@@ -63,7 +63,6 @@ func cleanup() {
 }
 
 func configureProvider() {
-	//tmpdir, err := ioutil.TempDir("/tmp", "sampledir")
 	tmpdir, err := os.MkdirTemp("", "provider.tf")
 	if err != nil {
 		panic(err)
@@ -118,7 +117,6 @@ func configureProvider() {
 	}
 
 	providerContent = providerContent + "}"
-	//providerContent := "terraform {\nrequired_providers {\nbtp = {\nsource  = \"SAP/btp\"\nversion = \"1.4.0\"\n}\n}\n}\n\nprovider \"btp\" {\ncli_server_url=\"https://cpcli.cf.eu10.hana.ondemand.com\"\nglobalaccount = \"terraformintprod\"\n}"
 
 	err = tfutils.CreateFileWithContent(abspath, providerContent)
 	if err != nil {

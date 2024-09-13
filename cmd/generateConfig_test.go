@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -59,7 +60,7 @@ func TestConfigureProvider(t *testing.T) {
 required_providers {
 btp = {
 source  = "SAP/btp"
-version = "1.6.0"
+version = "[VERSION]"
 }
 }
 }
@@ -69,6 +70,7 @@ globalaccount = "testaccount"
 cli_server_url="https://test.com"
 }`
 
+	expectedContent = strings.Replace(expectedContent, "[VERSION]", BtpProviderVersion[1:], -1)
 	content, err := os.ReadFile(expectedFilePath)
 	if err != nil {
 		t.Fatalf("Failed to read file %s: %v", expectedFilePath, err)
