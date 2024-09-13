@@ -1,4 +1,4 @@
-## btptfexporter resource trust-configurations
+## btptfexport resource trust-configurations
 
 export trust configurations of a subaccount
 
@@ -7,7 +7,7 @@ export trust configurations of a subaccount
 export trust-configurations will export trust configurations of the given subaccount and generate resource configuration for it
 
 ```
-btptfexporter resource trust-configurations [flags]
+btptfexport resource trust-configurations [flags]
 ```
 
 ### Options
@@ -21,5 +21,5 @@ btptfexporter resource trust-configurations [flags]
 
 ### SEE ALSO
 
-* [btptfexporter resource](btptfexporter_resource.md)	 - Export specific btp resources from a subaccount
+* [btptfexport resource](btptfexport_resource.md)	 - Export specific btp resources from a subaccount
 

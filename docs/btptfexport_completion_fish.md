@@ -1,4 +1,4 @@
-## btptfexporter completion fish
+## btptfexport completion fish
 
 Generate the autocompletion script for fish
 
@@ -8,17 +8,17 @@ Generate the autocompletion script for the fish shell.
 
 To load completions in your current shell session:
 
-	btptfexporter completion fish | source
+	btptfexport completion fish | source
 
 To load completions for every new session, execute once:
 
-	btptfexporter completion fish > ~/.config/fish/completions/btptfexporter.fish
+	btptfexport completion fish > ~/.config/fish/completions/btptfexport.fish
 
 You will need to start a new shell for this setup to take effect.
 
 
 ```
-btptfexporter completion fish [flags]
+btptfexport completion fish [flags]
 ```
 
 ### Options
@@ -30,5 +30,5 @@ btptfexporter completion fish [flags]
 
 ### SEE ALSO
 
-* [btptfexporter completion](btptfexporter_completion.md)	 - Generate the autocompletion script for the specified shell
+* [btptfexport completion](btptfexport_completion.md)	 - Generate the autocompletion script for the specified shell
 

@@ -1,4 +1,4 @@
-## btptfexporter resource from-file
+## btptfexport resource from-file
 
 export resources from a json file.
 
@@ -8,7 +8,7 @@ Use this command to export resources from the json file that is generated using 
 You can removes resource names from this config file, if you want to selectively import resources
 
 ```
-btptfexporter resource from-file [flags]
+btptfexport resource from-file [flags]
 ```
 
 ### Options
@@ -23,5 +23,5 @@ btptfexporter resource from-file [flags]
 
 ### SEE ALSO
 
-* [btptfexporter resource](btptfexporter_resource.md)	 - Export specific btp resources from a subaccount
+* [btptfexport resource](btptfexport_resource.md)	 - Export specific btp resources from a subaccount
 

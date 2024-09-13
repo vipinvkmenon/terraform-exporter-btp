@@ -1,4 +1,4 @@
-## btptfexporter resource environment-instances
+## btptfexport resource environment-instances
 
 export environment instance of a subaccount
 
@@ -7,7 +7,7 @@ export environment instance of a subaccount
 export environment-instance will export all the environment instance of the given subaccount and generate resource configuration for it
 
 ```
-btptfexporter resource environment-instances [flags]
+btptfexport resource environment-instances [flags]
 ```
 
 ### Options
@@ -21,5 +21,5 @@ btptfexporter resource environment-instances [flags]
 
 ### SEE ALSO
 
-* [btptfexporter resource](btptfexporter_resource.md)	 - Export specific btp resources from a subaccount
+* [btptfexport resource](btptfexport_resource.md)	 - Export specific btp resources from a subaccount
 

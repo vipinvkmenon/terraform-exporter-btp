@@ -1,4 +1,4 @@
-## btptfexporter resource subscriptions
+## btptfexport resource subscriptions
 
 export subscriptions of a subaccount
 
@@ -7,7 +7,7 @@ export subscriptions of a subaccount
 export subscriptions will export subscriptions of the given subaccount and generate resource configuration for it
 
 ```
-btptfexporter resource subscriptions [flags]
+btptfexport resource subscriptions [flags]
 ```
 
 ### Options
@@ -21,5 +21,5 @@ btptfexporter resource subscriptions [flags]
 
 ### SEE ALSO
 
-* [btptfexporter resource](btptfexporter_resource.md)	 - Export specific btp resources from a subaccount
+* [btptfexport resource](btptfexport_resource.md)	 - Export specific btp resources from a subaccount
 

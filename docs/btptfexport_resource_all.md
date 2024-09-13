@@ -1,4 +1,4 @@
-## btptfexporter resource all
+## btptfexport resource all
 
 export all resources of a subaccount
 
@@ -10,7 +10,7 @@ export all is a single command to export btp_subaccount, btp_subaccount_entitlem
 btp_subaccount_trust_configurations 
 
 ```
-btptfexporter resource all [flags]
+btptfexport resource all [flags]
 ```
 
 ### Options
@@ -24,5 +24,5 @@ btptfexporter resource all [flags]
 
 ### SEE ALSO
 
-* [btptfexporter resource](btptfexporter_resource.md)	 - Export specific btp resources from a subaccount
+* [btptfexport resource](btptfexport_resource.md)	 - Export specific btp resources from a subaccount
 
