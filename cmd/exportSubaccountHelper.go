@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func exportSubaccount(subaccountID string, configDir string) {
+func exportSubaccount(subaccountID string, configDir string, optionalValues ...[]string) {
 
 	dataBlock, err := readSubaccountDataSource(subaccountID)
 	if err != nil {
@@ -42,6 +42,14 @@ func exportSubaccount(subaccountID string, configDir string) {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 		return
+	}
+
+	if len(optionalValues) != 0 {
+		valueFromJson := optionalValues[0]
+		if valueFromJson[0] != fmt.Sprintf("%v", data["name"]) {
+			log.Println("Error:", fmt.Errorf("Subaccount "+valueFromJson[0]+" not found. Please adjust it in the provided file"))
+			os.Exit(0)
+		}
 	}
 
 	importBlock, err := getSubaccountImportBlock(data, subaccountID)
