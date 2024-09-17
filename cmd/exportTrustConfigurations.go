@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -14,9 +16,12 @@ var exportTrustConfigurationsCmd = &cobra.Command{
 		subaccount, _ := cmd.Flags().GetString("subaccount")
 		resourceFileName, _ := cmd.Flags().GetString("resourceFileName")
 		configDir, _ := cmd.Flags().GetString("config-output-dir")
-		setupConfigDir(configDir)
+
+		printExportStartMessage()
+		setupConfigDir(configDir, true)
 		exportSubaccountTrustConfigurations(subaccount, configDir, nil)
-		generateConfig(resourceFileName, configDir)
+		generateConfig(resourceFileName, configDir, true, strings.ToUpper(string(SubaccountTrustConfigurationType)))
+		printExportSuccessMessage()
 	},
 }
 

@@ -10,13 +10,20 @@ import (
 
 func exportSubaccountEntitlements(subaccountID string, configDir string, filterValues []string) {
 
+	fmt.Println("")
+	spinner, err := startSpinner("crafting import block for " + strings.ToUpper(string(SubaccountEntitlementType)))
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
+
 	data, err := fetchImportConfiguration(subaccountID, SubaccountEntitlementType, TmpFolder)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 		return
 	}
 
-	importBlock, err := getEntitlementsImportBlock(data, subaccountID, filterValues)
+	importBlock, err := getSubaccountEntitlementsImportBlock(data, subaccountID, filterValues)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 		return
@@ -32,9 +39,15 @@ func exportSubaccountEntitlements(subaccountID string, configDir string, filterV
 		log.Fatalf("error: %v", err)
 		return
 	}
+
+	err = stopSpinner(spinner)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
 }
 
-func getEntitlementsImportBlock(data map[string]interface{}, subaccountId string, filterValues []string) (string, error) {
+func getSubaccountEntitlementsImportBlock(data map[string]interface{}, subaccountId string, filterValues []string) (string, error) {
 
 	resourceDoc, err := getDocByResourceName(ResourcesKind, SubaccountEntitlementType)
 	if err != nil {

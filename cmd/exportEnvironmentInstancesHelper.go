@@ -10,13 +10,20 @@ import (
 
 func exportSubaccountEnvironmentInstances(subaccountID string, configFolder string, filterValues []string) {
 
+	fmt.Println("")
+	spinner, err := startSpinner("crafting import block for " + strings.ToUpper(string(SubaccountEnvironmentInstanceType)))
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
+
 	data, err := fetchImportConfiguration(subaccountID, SubaccountEnvironmentInstanceType, TmpFolder)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 		return
 	}
 
-	importBlock, err := getImportBlock(data, subaccountID, filterValues)
+	importBlock, err := getSubaccountEnvironmentInstanceBlock(data, subaccountID, filterValues)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 		return
@@ -32,9 +39,16 @@ func exportSubaccountEnvironmentInstances(subaccountID string, configFolder stri
 		log.Fatalf("error: %v", err)
 		return
 	}
+
+	err = stopSpinner(spinner)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
+
 }
 
-func getImportBlock(data map[string]interface{}, subaccountId string, filterValues []string) (string, error) {
+func getSubaccountEnvironmentInstanceBlock(data map[string]interface{}, subaccountId string, filterValues []string) (string, error) {
 
 	resourceDoc, err := getDocByResourceName(ResourcesKind, SubaccountEnvironmentInstanceType)
 	if err != nil {

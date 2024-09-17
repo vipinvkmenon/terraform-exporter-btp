@@ -9,13 +9,21 @@ import (
 )
 
 func exportSubaccountTrustConfigurations(subaccountID string, configDir string, filterValues []string) {
+
+	fmt.Println("")
+	spinner, err := startSpinner("crafting import block for " + strings.ToUpper(string(SubaccountTrustConfigurationType)))
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
+
 	data, err := fetchImportConfiguration(subaccountID, SubaccountTrustConfigurationType, TmpFolder)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 		return
 	}
 
-	importBlock, err := getTrustConfigurationsImportBlock(data, subaccountID, filterValues)
+	importBlock, err := getSubaccountTrustConfigurationsImportBlock(data, subaccountID, filterValues)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 		return
@@ -31,9 +39,16 @@ func exportSubaccountTrustConfigurations(subaccountID string, configDir string, 
 		log.Fatalf("error: %v", err)
 		return
 	}
+
+	err = stopSpinner(spinner)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
 }
 
-func getTrustConfigurationsImportBlock(data map[string]interface{}, subaccountId string, filterValues []string) (string, error) {
+func getSubaccountTrustConfigurationsImportBlock(data map[string]interface{}, subaccountId string, filterValues []string) (string, error) {
+
 	resourceDoc, err := getDocByResourceName(ResourcesKind, SubaccountTrustConfigurationType)
 	if err != nil {
 		log.Fatalf("read doc failed!")

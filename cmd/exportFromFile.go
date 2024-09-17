@@ -20,7 +20,9 @@ You can removes resource names from this config file, if you want to selectively
 		configDir, _ := cmd.Flags().GetString("config-output-dir")
 		jsonFile, _ := cmd.Flags().GetString("file-path")
 
+		printExportStartMessage()
 		exportFromFile(subaccount, jsonFile, resourceFileName, configDir)
+		printExportSuccessMessage()
 	},
 }
 
@@ -35,7 +37,6 @@ func init() {
 	_ = generateCmd.MarkFlagRequired("subaccount")
 	generateCmd.Flags().StringVarP(&resFile, "resourceFileName", "f", "resources.tf", "filename for resource config generation")
 	generateCmd.Flags().StringVarP(&jsonFile, "file-path", "p", "btpResources.json", "json file having subaccount resources list")
-	_ = generateCmd.MarkFlagRequired("file-path")
 	generateCmd.Flags().StringVarP(&configDir, "config-output-dir", "o", "generated_configurations", "folder for config generation")
 
 }

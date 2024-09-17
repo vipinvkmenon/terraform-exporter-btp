@@ -10,7 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/viper"
+	"github.com/theckman/yacspin"
 )
 
 var TmpFolder string
@@ -29,7 +31,19 @@ func runTerraformCommand(args ...string) error {
 	return cmd.Run()
 }
 
-func generateConfig(resourceFileName string, configFolder string) {
+func generateConfig(resourceFileName string, configFolder string, isMainCmd bool, resourceNameLong string) {
+
+	var spinner *yacspin.Spinner
+	var err error
+
+	if isMainCmd {
+		// We must distinguish if the command is run from a main command or via delegation from helper functions
+		spinner, err = startSpinner("generating Terraform configuration for " + resourceNameLong)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+			return
+		}
+	}
 
 	currentDir, err := os.Getwd()
 	if err != nil {
@@ -60,7 +74,6 @@ func generateConfig(resourceFileName string, configFolder string) {
 		return
 	}
 
-	fmt.Println("Terraform config successfully created")
 	cleanup()
 
 	//Switch back to the original directory
@@ -68,6 +81,15 @@ func generateConfig(resourceFileName string, configFolder string) {
 	if err != nil {
 		log.Fatalf("error changing directory to %s: %v \n", currentDir, err)
 		return
+	}
+
+	if isMainCmd {
+		err = stopSpinner(spinner)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+			return
+		}
+		fmt.Println(color.HiBlackString("   temporary files deleted"))
 	}
 }
 
@@ -86,9 +108,16 @@ func configureProvider() {
 	if err != nil {
 		panic(err)
 	}
+
 	TmpFolder = tmpdir
 	abspath := filepath.Join(tmpdir, "provider.tf")
-	fmt.Println(abspath)
+
+	debug := viper.GetViper().GetBool("debug")
+
+	if debug {
+		fmt.Printf("temp file created at %s\n", abspath)
+	}
+
 	username := os.Getenv("BTP_USERNAME")
 	password := os.Getenv("BTP_PASSWORD")
 	enableSSO := os.Getenv("BTP_ENABLE_SSO")
@@ -145,7 +174,13 @@ func configureProvider() {
 
 }
 
-func setupConfigDir(configFolder string) {
+func setupConfigDir(configFolder string, isMainCmd bool) {
+
+	if isMainCmd {
+		message := "set up config directory \"" + configFolder + "\""
+		fmt.Println(color.HiBlackString(message))
+	}
+
 	if len(TmpFolder) == 0 {
 		configureProvider()
 	}
@@ -184,7 +219,6 @@ func setupConfigDir(configFolder string) {
 			fmt.Println("invalid input. Exiting the process")
 			os.Exit(0)
 		}
-
 	}
 
 	sourceFile, err := os.Open(TmpFolder + "/provider.tf")
@@ -330,6 +364,12 @@ func deleteSourceFolder(srcDir string) {
 
 func finalizeTfConfig(configFolder string) {
 
+	spinner, err := startSpinner("finalizing Terraform configuration")
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
+
 	currentDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("error getting current directory: %v", err)
@@ -357,15 +397,36 @@ func finalizeTfConfig(configFolder string) {
 		log.Fatalf("error changing directory to %s: %v \n", currentDir, err)
 		return
 	}
+
+	err = stopSpinner(spinner)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
 }
 
 // Conveniecce functions that wrap repetitive steps
 func execPreExportSteps(tempConfigDir string) {
-	setupConfigDir(tempConfigDir)
+	setupConfigDir(tempConfigDir, false)
 }
 
 func execPostExportSteps(tempConfigDir string, targetConfigDir string, targetResourceFileName string, resourceNameLong string) {
-	generateConfig(targetResourceFileName, tempConfigDir)
+
+	spinner, err := startSpinner("generating Terraform configuration for " + resourceNameLong)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
+
+	generateConfig(targetResourceFileName, tempConfigDir, false, resourceNameLong)
 	mergeTfConfig(targetConfigDir, targetResourceFileName, tempConfigDir, resourceNameLong)
 	deleteSourceFolder(tempConfigDir)
+
+	err = stopSpinner(spinner)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return
+	}
+
+	fmt.Println(color.HiBlackString("   temporary files deleted"))
 }
