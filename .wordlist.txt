@@ -2,13 +2,14 @@ autocompletion
 breakpoint
 BTP
 btp
-btptfexport
+btptf
 CLA
 CLI
 config
 DCO
 dependabot
 devcontainer
+dir
 faq
 Github
 github
