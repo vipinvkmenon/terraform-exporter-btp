@@ -20,6 +20,7 @@ Valid resources are:
 - trust-configurations
 - roles
 - role-collections
+- service-bindings
 
 OR
 

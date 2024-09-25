@@ -17,7 +17,8 @@ var AllowedResources = []string{
 	tfutils.CmdSubscriptionParameter,
 	tfutils.CmdTrustConfigurationParameter,
 	tfutils.CmdRoleParameter,
-	tfutils.CmdRoleCollectionParameter}
+	tfutils.CmdRoleCollectionParameter,
+  tfutils.CmdServiceBindingParameter}
 
 // getCmd represents the get command
 var getCmd = &cobra.Command{
@@ -39,6 +40,7 @@ Valid resources are:
 - trust-configurations
 - roles
 - role-collections
+- service-bindings
 
 OR
 

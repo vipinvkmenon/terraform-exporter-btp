@@ -79,6 +79,8 @@ func generateConfigForResource(resource string, values []string, subaccount stri
 		exportSubaccountRoles(subaccount, tempConfigDir, values)
 	case tfutils.CmdRoleCollectionParameter:
 		exportSubaccountRoleCollections(subaccount, tempConfigDir, values)
+  case tfutils.CmdServiceBindingParameter:
+		exportSubaccountServiceBindings(subaccount, tempConfigDir, values)
 	}
 
 	tfutils.ExecPostExportSteps(tempConfigDir, configDir, resourceFileName, techResourceNameLong)
