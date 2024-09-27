@@ -26,7 +26,7 @@
       "id": "cliArgs",
       "type": "promptString",
       "description": "Args for launching btptf CLI. Use --cwd to set the working directory.",
-      "default": "resource all -s"
+      "default": "export by-resource -s"
     }
   ]
 }
