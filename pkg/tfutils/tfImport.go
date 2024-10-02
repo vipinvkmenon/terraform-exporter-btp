@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	files "github.com/SAP/terraform-exporter-btp/files"
-	output "github.com/SAP/terraform-exporter-btp/output"
+	files "github.com/SAP/terraform-exporter-btp/pkg/files"
+	output "github.com/SAP/terraform-exporter-btp/pkg/output"
 	"github.com/hashicorp/terraform-exec/tfexec"
 	"github.com/spf13/viper"
 )
@@ -313,9 +313,9 @@ func generateDataSourcesForList(subaccountID string, resourceName string) ([]str
 
 func runTerraformCommand(args ...string) error {
 
-	debug := viper.GetViper().GetBool("debug")
+	verbose := viper.GetViper().GetBool("verbose")
 	cmd := exec.Command("terraform", args...)
-	if debug {
+	if verbose {
 		cmd.Stdout = os.Stdout
 	} else {
 		cmd.Stdout = nil
