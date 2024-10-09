@@ -11,22 +11,24 @@ import (
 
 // exportByResourceCmd represents the exportAll command
 var exportByResourceCmd = &cobra.Command{
-	Use:               "by-resource",
+	Use:               "export",
 	Short:             "Export resources of a subaccount",
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		subaccount, _ := cmd.InheritedFlags().GetString("subaccount")
-		resourceFileName, _ := cmd.InheritedFlags().GetString("resource-file-name")
-		configDir, _ := cmd.InheritedFlags().GetString("config-dir")
-
+		subaccount, _ := cmd.Flags().GetString("subaccount")
+		configDir, _ := cmd.Flags().GetString("config-dir")
 		resources, _ := cmd.Flags().GetString("resources")
+
+		if configDir == configDirDefault {
+			configDir = configDir + "_" + subaccount
+		}
 
 		output.PrintExportStartMessage()
 		tfutils.SetupConfigDir(configDir, true)
 
 		resourcesList := tfutils.GetResourcesList(resources)
 		for _, resourceToImport := range resourcesList {
-			generateConfigForResource(resourceToImport, nil, subaccount, configDir, resourceFileName)
+			generateConfigForResource(resourceToImport, nil, subaccount, configDir, tfConfigFileName)
 		}
 
 		tfutils.FinalizeTfConfig(configDir)
@@ -42,12 +44,17 @@ func init() {
 	}
 
 	var resources string
+	var configDir string
+	var subaccount string
+	exportByResourceCmd.Flags().StringVarP(&subaccount, "subaccount", "s", "", "Id of the subaccount")
+	_ = exportByResourceCmd.MarkFlagRequired("subaccount")
+	exportByResourceCmd.Flags().StringVarP(&configDir, "config-dir", "c", configDirDefault, "folder for config generation")
 	exportByResourceCmd.Flags().StringVarP(&resources, "resources", "r", "all", "comma seperated string for resources")
+
+	rootCmd.AddCommand(exportByResourceCmd)
 
 	exportByResourceCmd.SetUsageTemplate(generateCmdHelp(exportByResourceCmd, templateOptions))
 	exportByResourceCmd.SetHelpTemplate(generateCmdHelp(exportByResourceCmd, templateOptions))
-
-	exportCmd.AddCommand(exportByResourceCmd)
 }
 
 func getExportByResourceCmdDescription(c *cobra.Command) string {
@@ -86,11 +93,11 @@ func getExportByResourceCmdExamples(c *cobra.Command) string {
 
 	return generateCmdHelpCustomExamplesBlock(map[string]string{
 		"Export a subaccount together with all its contained resources.": fmt.Sprintf("%s %s",
-			output.ColorStringCyan("btptf export by-resource --subaccount"),
+			output.ColorStringCyan("btptf export --subaccount"),
 			output.ColorStringYellow("[Subaccount ID]"),
 		),
 		"Export a subaccount with entitlements only.": fmt.Sprintf("%s %s %s%s",
-			output.ColorStringCyan("btptf export by-resource --subaccount"),
+			output.ColorStringCyan("btptf export --subaccount"),
 			output.ColorStringYellow("[Subaccount ID]"),
 			output.ColorStringCyan("--resource="),
 			output.ColorStringYellow("'subaccount,entitlements'"),
