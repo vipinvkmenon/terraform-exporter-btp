@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 
-	rootCmd.CompletionOptions.HiddenDefaultCmd = true
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	templateOptions := generateCmdHelpOptions{
 		Description: getRootCmdDescription,
@@ -83,7 +83,7 @@ func getRootCmdDescription(c *cobra.Command) string {
 					output.ColorStringCyan("export by-json"),
 				)),
 			formatHelpNote(
-				fmt.Sprintf("Alternatively, you can directly specify the resources to be exported on the command line using '%s'.",
+				fmt.Sprintf("Alternatively, you can directly specify the resources to be exported on the command line using %s.",
 					output.ColorStringCyan("export by-resource"),
 				)),
 		})

@@ -11,7 +11,7 @@ import (
 	tfutils "github.com/SAP/terraform-exporter-btp/pkg/tfutils"
 )
 
-func exportByJson(subaccount string, jsonfile string, resourceFile string, configDir string) {
+func exportByJson(subaccount string, directory string, jsonfile string, resourceFile string, configDir string) {
 	jsonFile, err := os.Open(jsonfile)
 	if err != nil {
 		log.Fatalf("error opening JSON file with resources: %v", err)
@@ -52,7 +52,7 @@ func exportByJson(subaccount string, jsonfile string, resourceFile string, confi
 			}
 		}
 		if len(value) != 0 {
-			generateConfigForResource(resName, value, subaccount, configDir, resourceFile)
+			generateConfigForResource(resName, value, subaccount, directory, configDir, resourceFile)
 		}
 	}
 

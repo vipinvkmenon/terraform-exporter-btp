@@ -6,13 +6,19 @@ import (
 	tfutils "github.com/SAP/terraform-exporter-btp/pkg/tfutils"
 )
 
-func GetImportBlockProvider(cmdResourceName string) (ITfImportProvider, error) {
+func GetImportBlockProvider(cmdResourceName string, level string) (ITfImportProvider, error) {
 
 	switch cmdResourceName {
 	case tfutils.CmdSubaccountParameter:
 		return newSubaccountImportProvider(), nil
 	case tfutils.CmdEntitlementParameter:
-		return newSubaccountEntitlementImportProvider(), nil
+		if level == tfutils.SubaccountLevel {
+			return newSubaccountEntitlementImportProvider(), nil
+		} else if level == tfutils.DirectoryLevel {
+			return newDirectoryEntitlementImportProvider(), nil
+		} else {
+			return nil, fmt.Errorf("unsupported level provided")
+		}
 	case tfutils.CmdEnvironmentInstanceParameter:
 		return newSubaccountEnvInstanceImportProvider(), nil
 	case tfutils.CmdSubscriptionParameter:
@@ -20,15 +26,29 @@ func GetImportBlockProvider(cmdResourceName string) (ITfImportProvider, error) {
 	case tfutils.CmdTrustConfigurationParameter:
 		return newSubaccountTrustConfigImportProvider(), nil
 	case tfutils.CmdRoleParameter:
-		return newSubaccountRoleImportProvider(), nil
+		if level == tfutils.SubaccountLevel {
+			return newSubaccountRoleImportProvider(), nil
+		} else if level == tfutils.DirectoryLevel {
+			return newDirectoryRoleImportProvider(), nil
+		} else {
+			return nil, fmt.Errorf("unsupported level provided")
+		}
 	case tfutils.CmdRoleCollectionParameter:
-		return newSubaccountRoleCollectionImportProvider(), nil
+		if level == tfutils.SubaccountLevel {
+			return newSubaccountRoleCollectionImportProvider(), nil
+		} else if level == tfutils.DirectoryLevel {
+			return newDirectoryRoleCollectionImportProvider(), nil
+		} else {
+			return nil, fmt.Errorf("unsupported level provided")
+		}
 	case tfutils.CmdServiceInstanceParameter:
 		return newSubaccountServiceInstanceImportProvider(), nil
 	case tfutils.CmdServiceBindingParameter:
 		return newSubaccountServiceBindingImportProvider(), nil
 	case tfutils.CmdSecuritySettingParameter:
 		return newSubaccountSecuritySettingImportProvider(), nil
+	case tfutils.CmdDirectoryParameter:
+		return newDirectoryImportProvider(), nil
 	default:
 		return nil, fmt.Errorf("unsupported resource provided")
 	}

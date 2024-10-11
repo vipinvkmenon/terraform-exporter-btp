@@ -14,11 +14,12 @@ import (
 const tfConfigFileName = "btp_resources.tf"
 const configDirDefault = "generated_configurations"
 
-
-func generateConfigForResource(resource string, values []string, subaccountId string, configDir string, resourceFileName string) {
+func generateConfigForResource(resource string, values []string, subaccountId string, directoryId string, configDir string, resourceFileName string) {
 	tempConfigDir := resource + "-config"
 
-	importProvider, _ := tfimportprovider.GetImportBlockProvider(resource)
+	level, iD := tfutils.GetExecutionLevelAndId(subaccountId, directoryId)
+
+	importProvider, _ := tfimportprovider.GetImportBlockProvider(resource, level)
 	resourceType := importProvider.GetResourceType()
 	techResourceNameLong := strings.ToUpper(resourceType)
 
@@ -27,13 +28,13 @@ func generateConfigForResource(resource string, values []string, subaccountId st
 	output.AddNewLine()
 	spinner := output.StartSpinner("crafting import block for " + techResourceNameLong)
 
-	data, err := tfutils.FetchImportConfiguration(subaccountId, resourceType, tfutils.TmpFolder)
+	data, err := tfutils.FetchImportConfiguration(subaccountId, directoryId, resourceType, tfutils.TmpFolder)
 	if err != nil {
 		tfutils.CleanupProviderConfig(tempConfigDir)
 		log.Fatalf("error fetching impport configuration for %s: %v", resourceType, err)
 	}
 
-	importBlock, err := importProvider.GetImportBlock(data, subaccountId, values)
+	importBlock, err := importProvider.GetImportBlock(data, iD, values)
 	if err != nil {
 		tfutils.CleanupProviderConfig(tempConfigDir)
 		log.Fatalf("error crafting import block: %v", err)

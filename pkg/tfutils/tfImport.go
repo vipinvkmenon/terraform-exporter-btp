@@ -20,6 +20,12 @@ import (
 const BtpProviderVersion = "v1.7.0"
 
 const (
+	SubaccountLevel = "subaccountLevel"
+	DirectoryLevel  = "directoryLevel"
+)
+
+const (
+	CmdDirectoryParameter           string = "directory"
 	CmdSubaccountParameter          string = "subaccount"
 	CmdEntitlementParameter         string = "entitlements"
 	CmdEnvironmentInstanceParameter string = "environment-instances"
@@ -45,6 +51,13 @@ const (
 	SubaccountSecuritySettingType     string = "btp_subaccount_security_setting"
 )
 
+const (
+	DirectoryType               string = "btp_directory"
+	DirectoryEntitlementType    string = "btp_directory_entitlement"
+	DirectoryRoleType           string = "btp_directory_role"
+	DirectoryRoleCollectionType string = "btp_directory_role_collection"
+)
+
 const DataSourcesKind DocKind = "data-sources"
 const ResourcesKind DocKind = "resources"
 
@@ -57,9 +70,9 @@ type BtpResources struct {
 	BtpResources []BtpResource
 }
 
-func FetchImportConfiguration(subaccountID string, resourceType string, tmpFolder string) (map[string]interface{}, error) {
+func FetchImportConfiguration(subaccountId string, directoryId string, resourceType string, tmpFolder string) (map[string]interface{}, error) {
 
-	dataBlock, err := readDataSource(subaccountID, resourceType)
+	dataBlock, err := readDataSource(subaccountId, directoryId, resourceType)
 	if err != nil {
 		return nil, fmt.Errorf("error reading data source: %v", err)
 	}
@@ -87,7 +100,7 @@ func FetchImportConfiguration(subaccountID string, resourceType string, tmpFolde
 func GetDocByResourceName(kind DocKind, resourceName string) (EntityDocs, error) {
 	var choice string
 
-	if (kind == ResourcesKind && resourceName != SubaccountSecuritySettingType) || (kind == DataSourcesKind && resourceName == SubaccountType) {
+	if (kind == ResourcesKind && resourceName != SubaccountSecuritySettingType) || (kind == DataSourcesKind && resourceName == SubaccountType) || (kind == DataSourcesKind && resourceName == DirectoryType) {
 		// We need the singular form of the resource name for all resoucres and the subaccount data source
 		choice = resourceName
 	} else {
@@ -104,12 +117,16 @@ func GetDocByResourceName(kind DocKind, resourceName string) (EntityDocs, error)
 	return doc, nil
 }
 
-func TranslateResourceParamToTechnicalName(resource string) string {
+func TranslateResourceParamToTechnicalName(resource string, level string) string {
 	switch resource {
 	case CmdSubaccountParameter:
 		return SubaccountType
 	case CmdEntitlementParameter:
-		return SubaccountEntitlementType
+		if level == SubaccountLevel {
+			return SubaccountEntitlementType
+		} else if level == DirectoryLevel {
+			return DirectoryEntitlementType
+		}
 	case CmdEnvironmentInstanceParameter:
 		return SubaccountEnvironmentInstanceType
 	case CmdSubscriptionParameter:
@@ -117,26 +134,36 @@ func TranslateResourceParamToTechnicalName(resource string) string {
 	case CmdTrustConfigurationParameter:
 		return SubaccountTrustConfigurationType
 	case CmdRoleParameter:
-		return SubaccountRoleType
+		if level == SubaccountLevel {
+			return SubaccountRoleType
+		} else if level == DirectoryLevel {
+			return DirectoryRoleType
+		}
 	case CmdRoleCollectionParameter:
-		return SubaccountRoleCollectionType
+		if level == SubaccountLevel {
+			return SubaccountRoleCollectionType
+		} else if level == DirectoryLevel {
+			return DirectoryRoleCollectionType
+		}
 	case CmdServiceInstanceParameter:
 		return SubaccountServiceInstanceType
 	case CmdServiceBindingParameter:
 		return SubaccountServiceBindingType
 	case CmdSecuritySettingParameter:
 		return SubaccountSecuritySettingType
+	case CmdDirectoryParameter:
+		return DirectoryType
 	}
 	return ""
 }
 
-func ReadDataSources(subaccountID string, resourceList []string) (btpResources BtpResources, err error) {
+func ReadDataSources(subaccountId string, directoryId string, resourceList []string) (btpResources BtpResources, err error) {
 
 	var btpResourcesList []BtpResource
 	for _, resource := range resourceList {
-		values, err := generateDataSourcesForList(subaccountID, resource)
+		values, err := generateDataSourcesForList(subaccountId, directoryId, resource)
 		if err != nil {
-			error := fmt.Errorf("error generating dats sources: %v", err)
+			error := fmt.Errorf("error generating data sources: %v", err)
 			return BtpResources{}, error
 		}
 
@@ -151,7 +178,7 @@ func ReadDataSources(subaccountID string, resourceList []string) (btpResources B
 	return btpResources, nil
 }
 
-func readDataSource(subaccountId string, resourceName string) (string, error) {
+func readDataSource(subaccountId string, directoryId string, resourceName string) (string, error) {
 
 	doc, err := GetDocByResourceName(DataSourcesKind, resourceName)
 	if err != nil {
@@ -159,10 +186,22 @@ func readDataSource(subaccountId string, resourceName string) (string, error) {
 	}
 
 	var dataBlock string
-	if resourceName == SubaccountType {
-		dataBlock = strings.Replace(doc.Import, "The ID of the subaccount", subaccountId, -1)
-	} else {
-		dataBlock = strings.Replace(doc.Import, doc.Attributes["subaccount_id"], subaccountId, -1)
+
+	level, _ := GetExecutionLevelAndId(subaccountId, directoryId)
+
+	switch level {
+	case SubaccountLevel:
+		if resourceName == SubaccountType {
+			dataBlock = strings.Replace(doc.Import, "The ID of the subaccount", subaccountId, -1)
+		} else {
+			dataBlock = strings.Replace(doc.Import, doc.Attributes["subaccount_id"], subaccountId, -1)
+		}
+	case DirectoryLevel:
+		if resourceName == DirectoryType {
+			dataBlock = strings.Replace(doc.Import, "The ID of the directory.", directoryId, -1)
+		} else {
+			dataBlock = strings.Replace(doc.Import, doc.Attributes["directory_id"], directoryId, -1)
+		}
 	}
 	return dataBlock, nil
 }
@@ -200,7 +239,7 @@ func getTfStateData(configDir string, resourceName string) ([]byte, error) {
 	// distinguish if the resourceName is entitlelement or different via case
 	var jsonBytes []byte
 	switch resourceName {
-	case SubaccountEntitlementType:
+	case SubaccountEntitlementType, DirectoryEntitlementType:
 		jsonBytes, err = json.Marshal(state.Values.RootModule.Resources[0].AttributeValues["values"])
 	default:
 		jsonBytes, err = json.Marshal(state.Values.RootModule.Resources[0].AttributeValues)
@@ -218,14 +257,16 @@ func transformDataToStringArray(btpResource string, data map[string]interface{})
 	var stringArr []string
 
 	switch btpResource {
-	case CmdSubaccountParameter:
+	case SubaccountType:
 		stringArr = []string{fmt.Sprintf("%v", data["name"])}
-	case CmdEntitlementParameter:
+	case DirectoryType:
+		stringArr = []string{fmt.Sprintf("%v", data["name"])}
+	case SubaccountEntitlementType, DirectoryEntitlementType:
 		for key := range data {
 			key := strings.Replace(key, ":", "_", -1)
 			stringArr = append(stringArr, key)
 		}
-	case CmdSubscriptionParameter:
+	case SubaccountSubscriptionType:
 		subscriptions := data["values"].([]interface{})
 		for _, value := range subscriptions {
 			subscription := value.(map[string]interface{})
@@ -233,56 +274,58 @@ func transformDataToStringArray(btpResource string, data map[string]interface{})
 				stringArr = append(stringArr, output.FormatSubscriptionResourceName(fmt.Sprintf("%v", subscription["app_name"]), fmt.Sprintf("%v", subscription["plan_name"])))
 			}
 		}
-	case CmdEnvironmentInstanceParameter:
+	case SubaccountEnvironmentInstanceType:
 		environmentInstances := data["values"].([]interface{})
 		for _, value := range environmentInstances {
 			environmentInstance := value.(map[string]interface{})
 			stringArr = append(stringArr, fmt.Sprintf("%v", environmentInstance["environment_type"]))
 		}
-	case CmdTrustConfigurationParameter:
+	case SubaccountTrustConfigurationType:
 		trusts := data["values"].([]interface{})
 		for _, value := range trusts {
 			trust := value.(map[string]interface{})
 			stringArr = append(stringArr, fmt.Sprintf("%v", trust["origin"]))
 		}
-	case CmdRoleParameter:
+	case SubaccountRoleType, DirectoryRoleType:
 		roles := data["values"].([]interface{})
 		for _, value := range roles {
 			role := value.(map[string]interface{})
 			stringArr = append(stringArr, output.FormatResourceNameGeneric(fmt.Sprintf("%v", role["name"])))
 		}
-	case CmdRoleCollectionParameter:
+	case SubaccountRoleCollectionType, DirectoryRoleCollectionType:
 		roleCollections := data["values"].([]interface{})
 		for _, value := range roleCollections {
 			roleCollection := value.(map[string]interface{})
 			stringArr = append(stringArr, output.FormatResourceNameGeneric(fmt.Sprintf("%v", roleCollection["name"])))
 		}
-	case CmdServiceInstanceParameter:
+	case SubaccountServiceInstanceType:
 		instances := data["values"].([]interface{})
 		for _, value := range instances {
 			instance := value.(map[string]interface{})
 			stringArr = append(stringArr, output.FormatServiceInstanceResourceName(fmt.Sprintf("%v", instance["name"]), fmt.Sprintf("%v", instance["serviceplan_id"])))
 		}
-	case CmdServiceBindingParameter:
+	case SubaccountServiceBindingType:
 		bindings := data["values"].([]interface{})
 		for _, value := range bindings {
 			binding := value.(map[string]interface{})
 			stringArr = append(stringArr, fmt.Sprintf("%v", binding["name"]))
 		}
-	case CmdSecuritySettingParameter:
+	case SubaccountSecuritySettingType:
 		stringArr = []string{fmt.Sprintf("%v", data["subaccount_id"])}
 
 	}
 	return stringArr
 }
 
-func generateDataSourcesForList(subaccountID string, resourceName string) ([]string, error) {
+func generateDataSourcesForList(subaccountId string, directoryId string, resourceName string) ([]string, error) {
 	dataBlockFile := filepath.Join(TmpFolder, "main.tf")
 	var jsonBytes []byte
 
-	btpResourceType := TranslateResourceParamToTechnicalName(resourceName)
+	level, _ := GetExecutionLevelAndId(subaccountId, directoryId)
 
-	dataBlock, err := readDataSource(subaccountID, btpResourceType)
+	btpResourceType := TranslateResourceParamToTechnicalName(resourceName, level)
+
+	dataBlock, err := readDataSource(subaccountId, directoryId, btpResourceType)
 	if err != nil {
 		error := fmt.Errorf("error reading data source: %s", err)
 		return nil, error
@@ -308,7 +351,7 @@ func generateDataSourcesForList(subaccountID string, resourceName string) ([]str
 		return nil, err
 	}
 
-	return transformDataToStringArray(resourceName, data), nil
+	return transformDataToStringArray(btpResourceType, data), nil
 }
 
 func runTerraformCommand(args ...string) error {
@@ -323,4 +366,13 @@ func runTerraformCommand(args ...string) error {
 
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func GetExecutionLevelAndId(subaccountID string, directoryID string) (level string, id string) {
+	if subaccountID != "" {
+		return SubaccountLevel, subaccountID
+	} else if directoryID != "" {
+		return DirectoryLevel, directoryID
+	}
+	return "", ""
 }
