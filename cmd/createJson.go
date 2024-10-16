@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	output "github.com/SAP/terraform-exporter-btp/pkg/output"
 	tfutils "github.com/SAP/terraform-exporter-btp/pkg/tfutils"
@@ -28,6 +29,11 @@ var createJsonCmd = &cobra.Command{
 
 		if !isValidUuid(iD) {
 			log.Fatalln(getUuidError(level, iD))
+		}
+
+		if path == jsonFileDefault {
+			pathParts := strings.Split(path, ".")
+			path = pathParts[0] + "_" + iD + "." + pathParts[1]
 		}
 
 		output.PrintInventoryCreationStartMessage()
