@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	files "github.com/SAP/terraform-exporter-btp/pkg/files"
@@ -57,6 +58,10 @@ const (
 	DirectoryRoleType           string = "btp_directory_role"
 	DirectoryRoleCollectionType string = "btp_directory_role_collection"
 )
+
+const DirectoryFeatureDefault string = "DEFAULT"
+const DirectoryFeatureEntitlements string = "ENTITLEMENTS"
+const DirectoryFeatureRoles string = "AUTHORIZATIONS"
 
 const DataSourcesKind DocKind = "data-sources"
 const ResourcesKind DocKind = "resources"
@@ -163,8 +168,23 @@ func TranslateResourceParamToTechnicalName(resource string, level string) string
 func ReadDataSources(subaccountId string, directoryId string, resourceList []string) (btpResources BtpResources, err error) {
 
 	var btpResourcesList []BtpResource
+	var featureListMemory []string
+
+	level, _ := GetExecutionLevelAndId(subaccountId, directoryId)
+
 	for _, resource := range resourceList {
-		values, err := generateDataSourcesForList(subaccountId, directoryId, resource)
+
+		if !resourceIsProcessable(level, resource, featureListMemory) {
+			continue
+		}
+
+		values, featureList, err := generateDataSourcesForList(subaccountId, directoryId, resource)
+
+		if resource == CmdDirectoryParameter {
+			// Store the features of the directory for later use
+			featureListMemory = featureList
+		}
+
 		if err != nil {
 			error := fmt.Errorf("error generating data sources: %v", err)
 			return BtpResources{}, error
@@ -327,7 +347,7 @@ func transformDataToStringArray(btpResource string, data map[string]interface{})
 	return stringArr
 }
 
-func generateDataSourcesForList(subaccountId string, directoryId string, resourceName string) ([]string, error) {
+func generateDataSourcesForList(subaccountId string, directoryId string, resourceName string) ([]string, []string, error) {
 	dataBlockFile := filepath.Join(TmpFolder, "main.tf")
 	var jsonBytes []byte
 
@@ -338,31 +358,30 @@ func generateDataSourcesForList(subaccountId string, directoryId string, resourc
 	dataBlock, err := readDataSource(subaccountId, directoryId, btpResourceType)
 	if err != nil {
 		error := fmt.Errorf("error reading data source: %s", err)
-		return nil, error
+		return nil, nil, error
 	}
 
 	err = files.CreateFileWithContent(dataBlockFile, dataBlock)
 	if err != nil {
 		error := fmt.Errorf("error creating file %s", dataBlockFile)
-		return nil, error
+		return nil, nil, error
 	}
 
 	jsonBytes, err = getTfStateData(TmpFolder, btpResourceType, iD)
 	if err != nil {
 		error := fmt.Errorf("error fetching Terraform data: %s", err)
-		return nil, error
+		return nil, nil, error
 	}
 
 	var data map[string]interface{}
 
 	err = json.Unmarshal(jsonBytes, &data)
 	if err != nil {
-		fmt.Print("\r\n")
-		log.Fatalf("error: %s", err)
-		return nil, err
+		error := fmt.Errorf("error unmarshelling JSON: %s", err)
+		return nil, nil, error
 	}
-
-	return transformDataToStringArray(btpResourceType, data), nil
+	// TODO surface the features of the directory stored in data["features"].([]interface{}) analogy to subscription in transform method
+	return transformDataToStringArray(btpResourceType, data), extractFeatureList(data, btpResourceType), nil
 }
 
 func runTerraformCommand(args ...string) error {
@@ -399,4 +418,40 @@ func handleNotFoundError(err error, resourceName string, iD string) error {
 		}
 	}
 	return err
+}
+
+func extractFeatureList(data map[string]interface{}, resourceName string) []string {
+
+	featureList := []string{}
+
+	if resourceName == DirectoryType {
+		features := data["features"].([]interface{})
+		var featureList []string
+		for _, feature := range features {
+			featureList = append(featureList, fmt.Sprintf("%v", feature.(string)))
+		}
+		return featureList
+	}
+
+	return featureList
+
+}
+
+func resourceIsProcessable(level string, resource string, featureList []string) bool {
+
+	// Only relevant for directory resources due to unmanaged and managed directories
+	if level != DirectoryLevel {
+		return true
+	}
+
+	// Check if the resource is processable based on the feature list
+	if resource == CmdEntitlementParameter && !slices.Contains(featureList, DirectoryFeatureEntitlements) {
+		return false
+	}
+
+	if (resource == CmdRoleParameter || resource == CmdRoleCollectionParameter) && !slices.Contains(featureList, DirectoryFeatureRoles) {
+		return false
+	}
+
+	return true
 }
