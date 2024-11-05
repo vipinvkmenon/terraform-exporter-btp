@@ -46,8 +46,8 @@ If you want to build the binary from scratch, follow these steps:
 
 4. The system will store the binary as `btptf` (`btptf.exe` in case of Windows) in the default binary path of your Go installation `$GOPATH/bin`.
 
-> [!TIP]
-> You find the value of the GOPATH via `go env GOPATH`
+
+**You find the value of the GOPATH via `go env GOPATH`**
 
 #### Troubleshooting
 
@@ -69,7 +69,7 @@ When using Terraform Exporter for SAP BTP, following security best practices is 
 
 3. **Network Security and Encryption**: When using remote state storage, ensure that data is encrypted both in transit and at rest.
 
-4. **Terraform Code and Secrets Management**: Avoid hardcoding secrets directly in Terraform configurations. Instead, use a secure vault services to manage secrets and inject them into configurations at runtime. This reduces the risk of exposing sensitive information in code repositories​
+4. **Terraform Code and Secrets Management**: Avoid hard coding secrets directly in Terraform configurations. Instead, use a secure vault services to manage secrets and inject them into configurations at runtime. This reduces the risk of exposing sensitive information in code repositories​
 
 5. **Review and Update Terraform Configurations Regularly**: Ensure that exported configurations align with current security and compliance requirements. Regularly review and update configurations, removing any deprecated or unused resources that could expose vulnerabilities.
 
@@ -161,8 +161,8 @@ How to set the parameters depends on your setup and is OS-specific:
        export $(xargs <.env)
        ```
 
-> [!IMPORTANT]
-> There is no predefined functionality in PowerShell to achieve the same. A custom script is needed.
+
+**There is no predefined functionality in PowerShell to achieve the same. A custom script is needed.**
 
 ## Exporting SAP BTP Resources
 

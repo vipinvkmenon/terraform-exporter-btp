@@ -1,5 +1,6 @@
 APIs
 autocompletion
+APIs
 breakpoint
 BTP
 btp
@@ -18,7 +19,8 @@ faq
 Github
 github
 Golang
-hardcoding
+GOLANG
+GOPATH
 html
 https
 HCL
@@ -35,6 +37,7 @@ pre
 PowerShell
 powershell
 README
+readme
 resourceFileName
 restrictedplan
 runtime
@@ -51,6 +54,7 @@ templating
 Terraform
 Terraform's
 terraform
+Terraform's
 tf
 toolchain
 UIs
