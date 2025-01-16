@@ -41,6 +41,7 @@ var AllowedResourcesOrganization = []string{
 	CmdCfSpaceParameter,
 	CmdCfUserParameter,
 	CmdCfDomainParamater,
+	CmdCfOrgRoleParameter,
 	CmdCfRouteParameter,
 	CmdCfSpaceQuotaParameter,
 	CmdCfServiceInstanceParameter,

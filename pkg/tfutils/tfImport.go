@@ -42,6 +42,7 @@ const (
 	CmdCfSpaceParameter             string = "spaces"
 	CmdCfUserParameter              string = "users"
 	CmdCfDomainParamater            string = "domains"
+	CmdCfOrgRoleParameter           string = "org-roles"
 	CmdCfRouteParameter             string = "routes"
 	CmdCfSpaceQuotaParameter        string = "space-quotas"
 	CmdCfServiceInstanceParameter   string = "cf-service-instances"
@@ -70,6 +71,7 @@ const (
 const (
 	CfSpaceType           string = "cloudfoundry_space"
 	CfUserType            string = "cloudfoundry_user"
+  CfOrgRoleType string = "cloudfoundry_org_role"
 	CfDomainType          string = "cloudfoundry_domain"
 	CfRouteType           string = "cloudfoundry_route"
 	CfSpaceQuotaType      string = "cloudfoundry_space_quota"
@@ -189,6 +191,8 @@ func TranslateResourceParamToTechnicalName(resource string, level string) string
 		return CfUserType
 	case CmdCfDomainParamater:
 		return CfDomainType
+	case CmdCfOrgRoleParameter:
+		return CfOrgRoleType
 	case CmdCfRouteParameter:
 		return CfRouteType
 	case CmdCfSpaceQuotaParameter:
@@ -385,6 +389,8 @@ func transformDataToStringArray(btpResource string, data map[string]interface{})
 		transformDataToStringArrayGeneric(data, &stringArr, "users", "username")
 	case CfDomainType:
 		transformDataToStringArrayGeneric(data, &stringArr, "domains", "name")
+	case CfOrgRoleType:
+		transformOrgRolesStringArray(data, &stringArr)
 	case CfRouteType:
 		transformDataToStringArrayGeneric(data, &stringArr, "routes", "url")
 	case CfSpaceQuotaType:
@@ -537,6 +543,14 @@ func transformSubscriptionsStringArray(data map[string]interface{}, stringArr *[
 			*stringArr = append(*stringArr, output.FormatSubscriptionResourceName(fmt.Sprintf("%v", subscription["app_name"]), fmt.Sprintf("%v", subscription["plan_name"])))
 		}
 	}
+}
+
+func transformOrgRolesStringArray(data map[string]interface{}, stringArr *[]string) {
+	roles := data["roles"].([]interface{})
+	for _, value := range roles {
+		role := value.(map[string]interface{})
+		*stringArr = append(*stringArr, output.FormatOrgRoleResourceName(fmt.Sprintf("%v", role["type"]), fmt.Sprintf("%v", role["user"])))
+  }
 }
 
 func transformCfServiceInstanceStringArray(data map[string]interface{}, stringArr *[]string) {

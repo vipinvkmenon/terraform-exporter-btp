@@ -37,6 +37,8 @@ func GetImportBlockProvider(cmdResourceName string, level string) (ITfImportProv
 		return newcloudfoundryUserImportProvider(), nil
 	case tfutils.CmdCfDomainParamater:
 		return newCloudfoundryDomainImportProvider(), nil
+	case tfutils.CmdCfOrgRoleParameter:
+		return newCloudfoundryOrgRolesImportProvider(), nil
 	case tfutils.CmdCfRouteParameter:
 		return newCloudfoundryRouteImportProvider(), nil
 	case tfutils.CmdCfSpaceQuotaParameter:
