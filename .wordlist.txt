@@ -60,12 +60,15 @@ Terraform
 Terraform's
 terraform
 Terraform's
+Terramate
 tf
 TLS
 toolchain
 UIs
 UI
 VS
+workspace
+workspaces
 YAML
 yaml
 yml
