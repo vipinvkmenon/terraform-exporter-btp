@@ -10,6 +10,10 @@ import (
 func ProcessResources(hclFile *hclwrite.File, level string, variables *generictools.VariableContent, dependencyAddresses *generictools.DepedendcyAddresses, btpClient *btpcli.ClientFacade, levelIds generictools.LevelIds) {
 
 	processResourceAttributes(hclFile.Body(), nil, level, variables, dependencyAddresses, btpClient, levelIds)
+	// Add datasource for service instances is necessary - Outer loop to have the main body object available
+	for _, datasourceInfo := range dependencyAddresses.DataSourceInfo {
+		addServicePlanDataSources(hclFile.Body(), datasourceInfo)
+	}
 }
 
 func processResourceAttributes(body *hclwrite.Body, inBlocks []string, level string, variables *generictools.VariableContent, dependencyAddresses *generictools.DepedendcyAddresses, btpClient *btpcli.ClientFacade, levelIds generictools.LevelIds) {
@@ -18,7 +22,7 @@ func processResourceAttributes(body *hclwrite.Body, inBlocks []string, level str
 
 		removeEmptyAttributes(body)
 
-		blockIdentifier, resourceAddress := generictools.ExtractBlockInformation(inBlocks)
+		_, blockIdentifier, resourceAddress := generictools.ExtractBlockInformation(inBlocks)
 
 		switch level {
 		case tfutils.SubaccountLevel:
@@ -92,7 +96,10 @@ func processSubaccountLevel(body *hclwrite.Body, variables *generictools.Variabl
 		addEntitlementDependency(body, dependencyAddresses)
 	}
 
-	// We add the reference to the subaccount at the end to have the subaccount ID available
+	if blockIdentifier == serviceInstanceBlockIdentifier {
+		addServiceInstanceDependency(body, dependencyAddresses, btpClient, levelIds.SubaccountId)
+	}
+
 	if blockIdentifier != subaccountBlockIdentifier {
 		replaceMainDependency(body, subaccountIdentifier, dependencyAddresses.SubaccountAddress)
 	}
