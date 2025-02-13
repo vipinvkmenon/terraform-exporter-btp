@@ -5,18 +5,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
-func extractOrgIds(body *hclwrite.Body, variables *generictools.VariableContent, orgId string) {
-	attrs := body.Attributes()
-	for name, attr := range attrs {
-		tokens := attr.Expr().BuildTokens(nil)
+const cfOrgIdentifier = "org"
 
-		if name == cfOrgIdentifier && len(tokens) == 3 {
-			replacedTokens, _ := generictools.ReplaceStringToken(tokens, cfOrgIdentifier)
-			(*variables)[name] = generictools.VariableInfo{
-				Description: "ID of the Cloud Foundry Organization",
-				Value:       orgId,
-			}
-			body.SetAttributeRaw(name, replacedTokens)
-		}
-	}
+func extractOrgIds(body *hclwrite.Body, variables *generictools.VariableContent, orgId string) {
+	generictools.ReplaceAttribute(body, cfOrgIdentifier, "ID of the Cloud Foundry Organization", variables)
 }

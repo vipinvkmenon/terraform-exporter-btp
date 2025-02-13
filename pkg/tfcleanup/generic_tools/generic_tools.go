@@ -90,8 +90,7 @@ func CreateVariablesFile(contentToCreate VariableContent, directory string) {
 	}
 }
 
-func ReplaceStringToken(tokens hclwrite.Tokens, identifier string) (replacedTokens hclwrite.Tokens, valueForVariable string) {
-
+func ReplaceStringTokenVar(tokens hclwrite.Tokens, identifier string) (replacedTokens hclwrite.Tokens, valueForVariable string) {
 	oQuote := tokens[0]
 	strTok := tokens[1]
 	cQuote := tokens[2]
@@ -109,7 +108,6 @@ func ReplaceStringToken(tokens hclwrite.Tokens, identifier string) (replacedToke
 }
 
 func ReplaceDependency(tokens hclwrite.Tokens, dependencyAddress string) (replacedTokens hclwrite.Tokens) {
-
 	oQuote := tokens[0]
 	strTok := tokens[1]
 	cQuote := tokens[2]
@@ -126,7 +124,6 @@ func ReplaceDependency(tokens hclwrite.Tokens, dependencyAddress string) (replac
 }
 
 func GetStringToken(tokens hclwrite.Tokens) (value string) {
-
 	oQuote := tokens[0]
 	strTok := tokens[1]
 	cQuote := tokens[2]
@@ -147,7 +144,6 @@ func ExtractBlockInformation(inBlocks []string) (blockType string, blockIdentifi
 }
 
 func checkForChanges(f *hclwrite.File, path string) (changed bool) {
-
 	changed = false
 
 	originalContent, err := os.ReadFile(path)
@@ -164,11 +160,153 @@ func checkForChanges(f *hclwrite.File, path string) (changed bool) {
 }
 
 func IsGlobalAccountParent(btpClient *btpcli.ClientFacade, parentId string) (isParent bool) {
-
 	globalAccountId, _ := btpcli.GetGlobalAccountId(btpClient)
 
 	if parentId == globalAccountId {
 		isParent = true
 	}
 	return
+}
+
+func RemoveConfigBlock(body *hclwrite.Body, resourceAddress string) {
+	for _, block := range body.Blocks() {
+		address := block.Labels()[0] + "." + block.Labels()[1]
+		if address == resourceAddress {
+			body.RemoveBlock(block)
+		}
+	}
+}
+
+func RemoveImportBlock(body *hclwrite.Body, resourceAddress string, resultStore *map[string]int) {
+
+	taintedBlocks := []*hclwrite.Block{}
+
+	for _, block := range body.Blocks() {
+
+		importTargetAttr := block.Body().GetAttribute("to")
+
+		if importTargetAttr == nil {
+			return
+		}
+
+		tokens := importTargetAttr.Expr().BuildTokens(nil)
+		address := string(tokens[0].Bytes) + string(tokens[1].Bytes) + string(tokens[2].Bytes)
+
+		if address == resourceAddress {
+			taintedBlocks = append(taintedBlocks, block)
+		}
+	}
+
+	for _, block := range taintedBlocks {
+		body.RemoveBlock(block)
+		(*resultStore)[strings.Split(resourceAddress, ".")[0]] -= 1
+	}
+}
+
+func RemoveEmptyAttributes(body *hclwrite.Body) {
+	for name, attr := range body.Attributes() {
+		tokens := attr.Expr().BuildTokens(nil)
+
+		// Check for a NULL value
+		if len(tokens) == 1 && string(tokens[0].Bytes) == EmptyString {
+			body.RemoveAttribute(name)
+		}
+
+		// Check for an empty JSON encoded string or an empty Map
+		var combinedString string
+		if len(tokens) == 5 || len(tokens) == 2 {
+			for _, token := range tokens {
+				combinedString += string(token.Bytes)
+			}
+		}
+
+		if combinedString == EmptyJson || combinedString == EmptyMap {
+			body.RemoveAttribute(name)
+		}
+	}
+}
+
+func ReplaceMainDependency(body *hclwrite.Body, mainIdentifier string, mainAddress string) {
+	if mainAddress == "" {
+		return
+	}
+
+	for name, attr := range body.Attributes() {
+		tokens := attr.Expr().BuildTokens(nil)
+
+		if name == mainIdentifier && len(tokens) == 3 {
+			replacedTokens := ReplaceDependency(tokens, mainAddress)
+			body.SetAttributeRaw(name, replacedTokens)
+		}
+	}
+}
+
+func ProcessParentAttribute(body *hclwrite.Body, description string, btpClient *btpcli.ClientFacade, variables *VariableContent) {
+	parentAttr := body.GetAttribute(ParentIdentifier)
+	if parentAttr == nil {
+		return
+	}
+
+	tokens := parentAttr.Expr().BuildTokens(nil)
+	if len(tokens) == 3 {
+
+		parentId := GetStringToken(tokens)
+
+		if IsGlobalAccountParent(btpClient, parentId) {
+			body.RemoveAttribute(ParentIdentifier)
+		} else {
+			replacedTokens, parentValue := ReplaceStringTokenVar(tokens, ParentIdentifier)
+			if parentValue != "" {
+				(*variables)[ParentIdentifier] = VariableInfo{
+					Description: description,
+					Value:       parentValue,
+				}
+			}
+			body.SetAttributeRaw(ParentIdentifier, replacedTokens)
+		}
+	}
+}
+
+func ReplaceAttribute(body *hclwrite.Body, identifier string, description string, variables *VariableContent) {
+	attribute := body.GetAttribute(identifier)
+
+	if attribute != nil {
+		tokens := attribute.Expr().BuildTokens(nil)
+
+		if len(tokens) == 3 {
+			replacedTokens, attrValue := ReplaceStringTokenVar(tokens, identifier)
+			(*variables)[identifier] = VariableInfo{
+				Description: description,
+				Value:       attrValue,
+			}
+			body.SetAttributeRaw(identifier, replacedTokens)
+		}
+	}
+}
+
+func RemoveUnusedImports(directory string, blocksToRemove *[]BlockSpecifier, resultStore *map[string]int) {
+	for _, block := range *blocksToRemove {
+		filePath := filepath.Join(directory, block.BlockIdentifier+"_import.tf")
+		f := GetHclFile(filePath)
+		body := f.Body()
+		RemoveImportBlock(body, block.ResourceAddress, resultStore)
+		ProcessChanges(f, filePath)
+	}
+}
+
+func RemoveEmptyFiles(dir string) error {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		log.Printf("Failed to read directory %q: %s", dir, err)
+		return err
+	}
+
+	for _, file := range files {
+		path := filepath.Join(dir, file.Name())
+		info, _ := os.Lstat(path)
+		if info.Size() == 0 {
+			os.Remove(path)
+		}
+	}
+	return nil
 }

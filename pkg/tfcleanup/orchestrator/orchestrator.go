@@ -14,7 +14,32 @@ import (
 	"github.com/SAP/terraform-exporter-btp/pkg/tfutils"
 )
 
-func CleanUpGeneratedCode(configFolder string, level string, levelIds generictools.LevelIds) {
+func CleanUpJson(resources tfutils.BtpResources) (cleanedResources tfutils.BtpResources) {
+	if os.Getenv("BTPTF_EXPERIMENTAL") == "" {
+		return resources
+	}
+	// Remove default trust configuration
+	for _, resource := range resources.BtpResources {
+		if resource.Name == "trust-configurations" {
+			var newValues []string
+			for _, value := range resource.Values {
+				if value != "sap.default" {
+					newValues = append(newValues, value)
+				}
+			}
+			if len(newValues) > 0 {
+				resource.Values = newValues
+				cleanedResources.BtpResources = append(cleanedResources.BtpResources, resource)
+			}
+		} else {
+			// Add other resources to cleanedResources
+			cleanedResources.BtpResources = append(cleanedResources.BtpResources, resource)
+		}
+	}
+	return cleanedResources
+}
+
+func CleanUpGeneratedCode(configFolder string, level string, levelIds generictools.LevelIds, resultStore *map[string]int) {
 	if os.Getenv("BTPTF_EXPERIMENTAL") == "" {
 		return
 	}
@@ -31,7 +56,7 @@ func CleanUpGeneratedCode(configFolder string, level string, levelIds generictoo
 
 	terraformConfigPath := filepath.Join(currentDir, configFolder)
 
-	err = orchestrateCodeCleanup(terraformConfigPath, level, levelIds)
+	err = orchestrateCodeCleanup(terraformConfigPath, level, levelIds, resultStore)
 
 	if err != nil {
 		fmt.Print("\r\n")
@@ -42,7 +67,7 @@ func CleanUpGeneratedCode(configFolder string, level string, levelIds generictoo
 	output.StopSpinner(spinner)
 }
 
-func orchestrateCodeCleanup(dir string, level string, levelIds generictools.LevelIds) error {
+func orchestrateCodeCleanup(dir string, level string, levelIds generictools.LevelIds, resultStore *map[string]int) error {
 	dir = filepath.Clean(dir)
 
 	_, err := os.Lstat(dir)
@@ -79,6 +104,14 @@ func orchestrateCodeCleanup(dir string, level string, levelIds generictools.Leve
 			providerprocessor.ProcessProvider(f, &contentToCreate)
 			generictools.ProcessChanges(f, path)
 		}
+	}
+
+	// Remove unused imports
+	generictools.RemoveUnusedImports(dir, &dependencyAddresses.BlocksToRemove, resultStore)
+
+	err = generictools.RemoveEmptyFiles(dir)
+	if err != nil {
+		return err
 	}
 
 	if len(contentToCreate) > 0 {
