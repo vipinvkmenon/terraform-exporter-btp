@@ -25,6 +25,16 @@ var exportByResourceCmd = &cobra.Command{
 		organization, _ := cmd.Flags().GetString("organization")
 		configDir, _ := cmd.Flags().GetString("config-dir")
 		resources, _ := cmd.Flags().GetString("resources")
+
+		backendPath, _ := cmd.Flags().GetString("backend-path")
+		backendType, _ := cmd.Flags().GetString("backend-type")
+		backendConfigOptions, _ := cmd.Flags().GetStringSlice("backend-config")
+		backendConfig := tfutils.BackendConfig{
+			PathToBackendConfig: backendPath,
+			BackendType:         backendType,
+			BackendConfig:       backendConfigOptions,
+		}
+
 		space := ""
 
 		resultStore := make(map[string]int)
@@ -73,7 +83,7 @@ var exportByResourceCmd = &cobra.Command{
 			CfOrgId:      organization,
 		}
 
-		tfcleanorchestrator.CleanUpGeneratedCode(configDir, level, levelIds, &resultStore)
+		tfcleanorchestrator.CleanUpGeneratedCode(configDir, level, levelIds, &resultStore, backendConfig)
 		tfutils.FinalizeTfConfig(configDir)
 		generateNextStepsDocument(configDir, subaccount, directory, organization, space)
 		tfutils.CleanupProviderConfig()
@@ -102,6 +112,8 @@ func init() {
 	var subaccount string
 	var directory string
 	var organization string
+	var backendPath string
+	var backendType string
 
 	exportByResourceCmd.Flags().StringVarP(&subaccount, "subaccount", "s", "", "ID of the subaccount")
 	exportByResourceCmd.Flags().StringVarP(&directory, "directory", "d", "", "ID of the directory")
@@ -111,6 +123,12 @@ func init() {
 
 	exportByResourceCmd.Flags().StringVarP(&configDir, "config-dir", "c", configDirDefault, "Directory for the Terraform code")
 	exportByResourceCmd.Flags().StringVarP(&resources, "resources", "r", "all", "Comma-separated list of resources to be included")
+
+	exportByResourceCmd.Flags().StringVarP(&backendPath, "backend-path", "b", "", "Path to the Terraform backend sample file")
+	exportByResourceCmd.Flags().StringVarP(&backendType, "backend-type", "t", "", "Type of the Terraform backend")
+	exportByResourceCmd.Flags().StringSliceP("backend-config", "e", []string{}, "Backend configuration")
+	exportByResourceCmd.MarkFlagsMutuallyExclusive("backend-path", "backend-type")
+	exportByResourceCmd.MarkFlagsRequiredTogether("backend-type", "backend-config")
 
 	rootCmd.AddCommand(exportByResourceCmd)
 
@@ -207,6 +225,22 @@ func getExportByResourceCmdExamples(c *cobra.Command) string {
 			output.ColorStringYellow("<subaccount ID>"),
 			output.ColorStringCyan("--resources"),
 			output.ColorStringYellow("'roles,role-collections'"),
+		),
+		"Export a subaccount with a sample backend configuration file": fmt.Sprintf("%s %s %s %s",
+			output.ColorStringCyan("btptf export --subaccount"),
+			output.ColorStringYellow("<subaccount ID>"),
+			output.ColorStringCyan("--backend-path"),
+			output.ColorStringYellow("backend.tf"),
+		),
+		"Export a subaccount with parameters for the backend configuration": fmt.Sprintf("%s %s %s %s %s %s %s %s",
+			output.ColorStringCyan("btptf export --subaccount"),
+			output.ColorStringYellow("<subaccount ID>"),
+			output.ColorStringCyan("--backend-type"),
+			output.ColorStringYellow("azurerm"),
+			output.ColorStringCyan("--backend-config"),
+			output.ColorStringYellow("'resource_group_name=rg-terraform-state'"),
+			output.ColorStringCyan("--backend-config"),
+			output.ColorStringYellow("'storage_account_name=terraformstatestorage'"),
 		),
 		"Export the spaces of a Cloud Foundry organization": fmt.Sprintf("%s %s %s %s",
 			output.ColorStringCyan("btptf export --organization"),
