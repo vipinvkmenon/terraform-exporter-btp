@@ -11,6 +11,7 @@ import (
 
 	"github.com/SAP/terraform-exporter-btp/pkg/files"
 	output "github.com/SAP/terraform-exporter-btp/pkg/output"
+	"github.com/SAP/terraform-exporter-btp/pkg/resume"
 	tfcleantypes "github.com/SAP/terraform-exporter-btp/pkg/tfcleanup/generic_tools"
 	tfcleanorchestrator "github.com/SAP/terraform-exporter-btp/pkg/tfcleanup/orchestrator"
 	tfutils "github.com/SAP/terraform-exporter-btp/pkg/tfutils"
@@ -59,7 +60,7 @@ func exportByJson(subaccount string, directory string, organization string, json
 
 	allowedResources := tfutils.GetValidResourcesByLevel(level)
 
-	for i := 0; i < len(resources.BtpResources); i++ {
+	for i := range resources.BtpResources {
 
 		if !(slices.Contains(allowedResources, resources.BtpResources[i].Name)) {
 
@@ -79,13 +80,23 @@ func exportByJson(subaccount string, directory string, organization string, json
 	tfutils.SetupConfigDir(configDir, true, level)
 	resultStore := make(map[string]int)
 
+	exportLog, _ := resume.GetExistingExportLog(configDir)
+	fullExportLog, _ := resume.GetExistingExportLogComplete(configDir)
+
 	for _, resName := range resNames {
+		// Check if the resource is already exported
+		if len(exportLog) > 0 && slices.Contains(exportLog, resName) {
+			// Skip the resource if it is already exported
+			continue
+		}
+
 		var value []string
 		for _, temp := range resources.BtpResources {
 			if temp.Name == resName {
 				value = temp.Values
 			}
 		}
+
 		if len(value) != 0 {
 			if resName == tfutils.CmdCfSpaceRoleParameter {
 				spaceRoles := make(map[string][]string)
@@ -101,10 +112,12 @@ func exportByJson(subaccount string, directory string, organization string, json
 					finalCount = finalCount + count
 				}
 				resultStore[resourceType] = finalCount
+				_ = resume.WriteExportLog(configDir, resName, resourceType, finalCount)
 
 			} else {
 				resourceType, count := generateConfigForResource(resName, value, subaccount, directory, organization, "", configDir, resourceFile)
 				resultStore[resourceType] = count
+				_ = resume.WriteExportLog(configDir, resName, resourceType, count)
 			}
 		}
 	}
@@ -118,6 +131,8 @@ func exportByJson(subaccount string, directory string, organization string, json
 	tfcleanorchestrator.CleanUpGeneratedCode(configDir, level, levelIds, &resultStore, backendConfig)
 	tfutils.FinalizeTfConfig(configDir)
 	generateNextStepsDocument(configDir, subaccount, directory, organization, "")
-	output.RenderSummaryTable(resultStore)
+	_ = resume.RemoveExportLog(configDir)
+	resultStoreNew := resume.MergeSummaryTable(resultStore, fullExportLog)
+	output.RenderSummaryTable(resultStoreNew)
 	tfutils.CleanupProviderConfig()
 }
