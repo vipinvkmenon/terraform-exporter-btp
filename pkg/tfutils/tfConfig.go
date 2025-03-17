@@ -9,10 +9,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	files "github.com/SAP/terraform-exporter-btp/pkg/files"
 	output "github.com/SAP/terraform-exporter-btp/pkg/output"
 	"github.com/SAP/terraform-exporter-btp/pkg/resume"
-	"github.com/nexidian/gocliselect"
 	"github.com/spf13/viper"
 	"github.com/theckman/yacspin"
 )
@@ -49,6 +49,11 @@ var AllowedResourcesOrganization = []string{
 	CmdCfServiceInstanceParameter,
 	CmdCfSpaceRoleParameter,
 }
+
+const selectionOverwrite = "Overwrite the existing directory and continue"
+const selectionResume = "Resume the existing export"
+const selectionAbort = "Abort the processing"
+const selectionInvalid = "Invalid selection"
 
 func GenerateConfig(resourceFileName string, configFolder string, isMainCmd bool, resourceNameLong string) error {
 
@@ -308,10 +313,10 @@ func SetupConfigDir(configFolder string, isMainCmd bool, level string) {
 }
 
 func handleInputExistingDir(choice string, configFilepath string, configFolder string, curWd string) {
-	if strings.ToUpper(choice[:1]) == "N" {
+	if choice == selectionAbort {
 		CleanupProviderConfig()
 		os.Exit(0)
-	} else if strings.ToUpper(choice[:1]) == "Y" {
+	} else if choice == selectionOverwrite {
 		output.AddNewLine()
 		fmt.Println(output.ColorStringCyan("existing files will be overwritten"))
 		output.AddNewLine()
@@ -322,7 +327,7 @@ func handleInputExistingDir(choice string, configFilepath string, configFolder s
 			output.AddNewLine()
 			log.Fatalf("error recreating configuration folder %s at %s: %v", configFolder, curWd, err)
 		}
-	} else if choice == "R" {
+	} else if choice == selectionResume {
 		// Can only happen if we are in the main command
 		// Do nothing, the processing will be resumed with the existing directory
 		output.AddNewLine()
@@ -356,31 +361,46 @@ func createNewConfigDir(configFilepath string, configFolder string, curWd string
 }
 
 func handleExistingDir(isMainCmd bool, configFilepath string, configFolder string, curWd string) {
-	var choice string
+	var err error
 	var importLog []string
 	if isMainCmd {
 		// check if an import log exists to decide how to proceed
 		importLog, _ = resume.GetExistingExportLog(configFolder)
 	}
 
+	surveyName := "existingdir"
+	surveyMessage := ""
+	surveyDefault := selectionOverwrite
+	answer := struct {
+		ExistingDir string `survey:"existingdir"`
+	}{}
+
+	surveyOptions := []string{selectionOverwrite, selectionAbort}
+
 	if len(importLog) > 0 {
-		menuString := fmt.Sprintf("the configuration directory '%s' with an import log exists. How do you want to continue?", configFolder)
-		menu := gocliselect.NewMenu(menuString)
-		menu.AddItem("Overwrite the existing directory", "Y")
-		menu.AddItem("Resume the existing export", "R")
-		menu.AddItem("Abort the processing", "N")
-
-		choice = menu.Display()
+		surveyMessage = fmt.Sprintf("the configuration directory '%s' with an import log exists. How do you want to continue?", configFolder)
+		surveyOptions = append([]string{selectionResume}, surveyOptions...)
+		surveyDefault = selectionResume
 	} else {
-		menuString := fmt.Sprintf("the configuration directory '%s' already exists. How do you want to continue?", configFolder)
-		menu := gocliselect.NewMenu(menuString)
-		menu.AddItem("Overwrite the existing directory and continue", "Y")
-		menu.AddItem("Abort the processing", "N")
-
-		choice = menu.Display()
+		surveyMessage = fmt.Sprintf("the configuration directory '%s' already exists. How do you want to continue?", configFolder)
 	}
 
-	handleInputExistingDir(choice, configFilepath, configFolder, curWd)
+	qs := []*survey.Question{
+		{
+			Name: surveyName,
+			Prompt: &survey.Select{
+				Message: surveyMessage,
+				Options: surveyOptions,
+				Default: surveyDefault,
+			},
+		},
+	}
+
+	err = survey.Ask(qs, &answer)
+	if err != nil {
+		answer.ExistingDir = selectionInvalid
+	}
+	handleInputExistingDir(answer.ExistingDir, configFilepath, configFolder, curWd)
 
 }
 
