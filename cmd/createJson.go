@@ -38,7 +38,7 @@ var createJsonCmd = &cobra.Command{
 		output.PrintInventoryCreationStartMessage()
 		resourcesList := tfutils.GetResourcesList(resources, level)
 		createJson(subaccount, directory, organization, path, resourcesList)
-		output.PrintInventoryCreationSuccessMessage()
+		output.PrintInventoryCreationSuccessMessage(path)
 	},
 }
 
@@ -69,7 +69,7 @@ func init() {
 
 	createJsonCmd.MarkFlagsOneRequired("subaccount", "directory", "org")
 	createJsonCmd.MarkFlagsMutuallyExclusive("subaccount", "directory", "org")
-	createJsonCmd.Flags().StringVarP(&path, "path", "p", jsonFileDefault, "Full path to JSON file with list of resources")
+	createJsonCmd.Flags().StringVarP(&path, "path", "p", jsonFileDefault, "Path to JSON file with list of resources")
 	createJsonCmd.Flags().StringVarP(&resources, "resources", "r", "all", "Comma-separated list of resources to be included")
 
 	rootCmd.AddCommand(createJsonCmd)

@@ -5,9 +5,11 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
+	"github.com/SAP/terraform-exporter-btp/pkg/files"
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/viper"
@@ -118,9 +120,13 @@ func PrintExportStartMessage() {
 	fmt.Println("")
 }
 
-func PrintExportSuccessMessage() {
+func PrintExportSuccessMessage(configDir string) {
+	path2Config := files.GetFullPath(configDir)
+
 	fmt.Println("")
-	fmt.Println("🎉 Terraform configuration successfully created")
+	fmt.Printf("🎉 Terraform configuration successfully created at %s\n", BoldString(configDir))
+	fmt.Println("")
+	fmt.Printf("Click here to navigate to the folder %s\n", AsLink(fmt.Sprintf("file://%s", path2Config)))
 	fmt.Println("")
 }
 
@@ -130,9 +136,15 @@ func PrintInventoryCreationStartMessage() {
 	fmt.Println("")
 }
 
-func PrintInventoryCreationSuccessMessage() {
+func PrintInventoryCreationSuccessMessage(file string) {
+
+	path2File := files.GetFullPath(file)
+	folderPath := filepath.Dir(path2File)
+
 	fmt.Println("")
-	fmt.Println("📋 Resource list successfully created")
+	fmt.Printf("📋 Resource list successfully created at %s\n", BoldString(file))
+	fmt.Println("")
+	fmt.Printf("Click here to navigate to the folder %s\n", AsLink(fmt.Sprintf("file://%s", folderPath)))
 	fmt.Println("")
 }
 

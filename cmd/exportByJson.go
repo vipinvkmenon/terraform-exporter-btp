@@ -38,7 +38,6 @@ var exportByJsonCmd = &cobra.Command{
 		if !isValidUuid(iD) {
 			log.Fatalln(getUuidError(level, iD))
 		}
-
 		if configDir == configDirDefault {
 			configDirParts := strings.Split(configDir, "_")
 			configDir = configDirParts[0] + "_" + configDirParts[1] + "_" + iD
@@ -51,7 +50,7 @@ var exportByJsonCmd = &cobra.Command{
 
 		output.PrintExportStartMessage()
 		exportByJson(subaccount, directory, organization, path, tfConfigFileName, configDir, backendConfig)
-		output.PrintExportSuccessMessage()
+		output.PrintExportSuccessMessage(configDir)
 	},
 }
 
