@@ -3,6 +3,7 @@ package defaultfilter
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/SAP/terraform-exporter-btp/internal/btpcli"
 	"github.com/SAP/terraform-exporter-btp/pkg/toggles"
@@ -175,4 +176,31 @@ func FilterDefaultIdpJsonData(data map[string]any) map[string]any {
 
 func IsIdpDefaultIdp(origin string) bool {
 	return origin == "sap.default"
+}
+
+func IsDefaultEntitlement(serviceName string, planName string) bool {
+	if toggles.IsEntitlementFilterDeactivated() {
+		return false
+	}
+
+	return slices.Contains(DefaultEntitlements, struct {
+		ServiceName string
+		PlanName    string
+	}{ServiceName: serviceName, PlanName: planName})
+}
+
+func FilterDefaultEntitlementsFromJsonData(data map[string]any) map[string]any {
+	if toggles.IsEntitlementFilterDeactivated() {
+		return data
+	}
+
+	for key := range data {
+		entitlement := strings.Split(key, ":")
+		serviceName := entitlement[0]
+		planName := entitlement[1]
+		if IsDefaultEntitlement(serviceName, planName) {
+			delete(data, key)
+		}
+	}
+	return data
 }

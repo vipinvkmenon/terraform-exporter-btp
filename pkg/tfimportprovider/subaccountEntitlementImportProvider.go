@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/SAP/terraform-exporter-btp/pkg/defaultfilter"
 	tfutils "github.com/SAP/terraform-exporter-btp/pkg/tfutils"
 )
 
@@ -57,6 +58,12 @@ func CreateEntitlementImportBlock(data map[string]interface{}, subaccountId stri
 
 	} else {
 		for _, value := range data {
+
+			serviceName, planName := getServicePlanNameFromData(value)
+			if defaultfilter.IsDefaultEntitlement(serviceName, planName) {
+				continue
+			}
+
 			importBlock += templateEntitlementImport(count, value, subaccountId, resourceDoc)
 			count++
 		}
@@ -73,4 +80,9 @@ func templateEntitlementImport(x int, value interface{}, subaccountId string, re
 		}
 	}
 	return template + "\n"
+}
+
+func getServicePlanNameFromData(value interface{}) (serviceName string, planName string) {
+	entitlement := value.(map[string]any)
+	return fmt.Sprintf("%v", entitlement["service_name"]), fmt.Sprintf("%v", entitlement["plan_name"])
 }
