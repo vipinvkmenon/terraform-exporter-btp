@@ -36,7 +36,6 @@ changelog:
   use: github-native
 binary_signs:
   - artifacts: binary
-    signature: "{{ .ArtifactPath }}.sig"
     args:
       - --batch
       - --yes
@@ -44,9 +43,10 @@ binary_signs:
       - --local-user
       - "{{ .Env.GPG_FINGERPRINT }}"
       - --output
-      - "{{ .ArtifactPath }}.sig"
+      - "${signature}"
       - --detach-sign
-      - "{{ .ArtifactPath }}"
+      - "${artifact}"
+    output: true
 nfpms:
   - id: btptf
     # Name of the package - Default: ProjectName.
