@@ -44,7 +44,7 @@ binary_signs:
       - --local-user
       - "{{ .Env.GPG_FINGERPRINT }}"
       - --output
-      - "{{ .Signature }}"
+      - "{{ .ArtifactPath }}.sig"
       - --detach-sign
       - "{{ .ArtifactPath }}"
 nfpms:
