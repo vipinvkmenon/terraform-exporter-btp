@@ -34,7 +34,8 @@ checksum:
   split: true
 changelog:
   use: github-native
-
+binary_signs:
+  - {}
 nfpms:
   - id: btptf
     # Name of the package - Default: ProjectName.
